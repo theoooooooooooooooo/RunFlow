@@ -1,0 +1,60 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+
+    container_name: runflow_php
+
+    volumes:
+      - .:/var/www/html
+
+    working_dir: /var/www/html
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - database
+
+    command: php -S 0.0.0.0:8000 -t public
+
+  database:
+    image: mysql:8.0
+
+    container_name: runflow_mysql
+
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: runflow
+      MYSQL_USER: runflow
+      MYSQL_PASSWORD: runflow
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+
+    container_name: runflow_phpmyadmin
+
+    restart: always
+
+    depends_on:
+      - database
+
+    environment:
+      PMA_HOST: database
+      MYSQL_ROOT_PASSWORD: root
+
+    ports:
+      - "8080:80"
+
+volumes:
+  mysql_data:
+###> doctrine/doctrine-bundle ###
