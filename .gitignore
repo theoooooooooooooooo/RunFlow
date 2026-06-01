@@ -2,7 +2,8 @@
 /node_modules/
 /.idea/
 /.vscode/
-.env.local
+.env
+.env.*
 /docker/mysql/
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
