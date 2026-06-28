@@ -1,20 +1,169 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello Admin/DashboardController!{% endblock %}
+{% block title %}Dashboard Administration — Runflow{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/var/www/html/src/Controller/Admin/DashboardController.php</code></li>
-        <li>Your template at <code>/var/www/html/templates/admin/dashboard/index.html.twig</code></li>
-    </ul>
+<div class="stats-grid">
+    <div class="stat-card stat-warning">
+        <div class="stat-label">En attente</div>
+        <div class="stat-number">{{ nb_en_attente }}</div>
+    </div>
+    <div class="stat-card stat-info">
+        <div class="stat-label">Techniciens</div>
+        <div class="stat-number">{{ nb_techniciens }}</div>
+    </div>
+    <div class="stat-card stat-success">
+        <div class="stat-label">Clients</div>
+        <div class="stat-number">{{ nb_clients }}</div>
+    </div>
+    <div class="stat-card {% if nb_stock_critique > 0 %}stat-danger{% else %}stat-success{% endif %}">
+        <div class="stat-label">Stock critique</div>
+        <div class="stat-number">{{ nb_stock_critique }}</div>
+    </div>
 </div>
+
+{# ── Demandes en attente ── #}
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2>Demandes en attente</h2>
+        <a href="{{ path('app_intervention_index') }}" class="btn-link">Voir tout →</a>
+    </div>
+
+    {% if en_attente is empty %}
+        <p class="empty-state">Aucune demande en attente.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Description</th>
+                    <th>Adresse</th>
+                    <th>Date souhaitée</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for intervention in en_attente %}
+                <tr>
+                    <td>#{{ intervention.id }}</td>
+                    <td>{{ intervention.client.nomComplet }}</td>
+                    <td>{{ intervention.description|slice(0, 60) }}{% if intervention.description|length > 60 %}…{% endif %}</td>
+                    <td>{{ intervention.adresse }}</td>
+                    <td>{{ intervention.dateSouhaitee|date('d/m/Y') }}</td>
+                    <td>
+                        <a href="{{ path('app_intervention_show', {id: intervention.id}) }}" class="btn btn-sm btn-primary">
+                            Traiter
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{# ── Activité récente ── #}
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2>Activité récente</h2>
+        <a href="{{ path('app_intervention_index') }}" class="btn-link">Voir tout →</a>
+    </div>
+
+    {% if dernieres is empty %}
+        <p class="empty-state">Aucune intervention enregistrée.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Technicien</th>
+                    <th>Adresse</th>
+                    <th>Date demande</th>
+                    <th>Statut</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for intervention in dernieres %}
+                <tr>
+                    <td>#{{ intervention.id }}</td>
+                    <td>{{ intervention.client.nomComplet }}</td>
+                    <td>
+                        {% if intervention.technicien %}
+                            {{ intervention.technicien.nomComplet }}
+                        {% else %}
+                            <span class="text-muted">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ intervention.adresse }}</td>
+                    <td>{{ intervention.dateDemande|date('d/m/Y') }}</td>
+                    <td>
+                        <span class="badge badge-{{ intervention.statut.value }}">
+                            {{ intervention.statut.label() }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ path('app_intervention_show', {id: intervention.id}) }}" class="btn btn-sm">
+                            Voir
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{# ── Stock critique ── #}
+{% if stock_critique is not empty %}
+<div class="dashboard-section section-alert">
+    <div class="section-header">
+        <h2>⚠ Stock critique</h2>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Matériel</th>
+                <th>Quantité restante</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for materiel in stock_critique %}
+            <tr>
+                <td>{{ materiel.nom }}</td>
+                <td><span class="badge badge-danger">{{ materiel.quantiteStock }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{# ── Navigation rapide ── #}
+<div class="dashboard-section">
+    <h2 style="margin-bottom: 16px">Navigation rapide</h2>
+    <div class="quick-nav">
+        <a href="{{ path('app_intervention_index') }}" class="nav-card">
+            <span class="nav-icon">📋</span>
+            <span>Interventions</span>
+        </a>
+        <a href="#" class="nav-card">
+            <span class="nav-icon">👥</span>
+            <span>Techniciens</span>
+        </a>
+        <a href="#" class="nav-card">
+            <span class="nav-icon">🔧</span>
+            <span>Matériel</span>
+        </a>
+        <a href="#" class="nav-card">
+            <span class="nav-icon">📅</span>
+            <span>Planning</span>
+        </a>
+    </div>
+</div>
+
 {% endblock %}

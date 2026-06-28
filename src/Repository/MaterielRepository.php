@@ -16,28 +16,27 @@ class MaterielRepository extends ServiceEntityRepository
         parent::__construct($registry, Materiel::class);
     }
 
-    //    /**
-    //     * @return Materiel[] Returns an array of Materiel objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('m')
-    //            ->andWhere('m.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('m.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Matériels en stock critique (quantité <= seuil)
+     */
+    public function findStockCritique(int $seuil = 5): array
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.quantite_stock <= :seuil')
+            ->setParameter('seuil', $seuil)
+            ->orderBy('m.quantite_stock', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Materiel
-    //    {
-    //        return $this->createQueryBuilder('m')
-    //            ->andWhere('m.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Nombre total de références en stock
+     */
+    public function countTotal(): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

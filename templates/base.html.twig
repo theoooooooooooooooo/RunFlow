@@ -1,25 +1,66 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        <link rel="stylesheet" href="{{ asset('css/intervention.css') }}">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Runflow{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+    {% if app.user %}
+    <aside class="sidebar">
+        <div class="logo">RunFlow</div>
+        <nav class="menu">
 
-        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphpHotReload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
-    </head>
-    <body>
+            {% if is_granted('ROLE_CLIENT') %}
+                <a href="{{ path('app_client_dashboard') }}">🏠 Dashboard</a>
+                <a href="{{ path('app_intervention_client') }}">📋 Mes interventions</a>
+                <a href="{{ path('app_intervention_new') }}">➕ Nouvelle demande</a>
+            {% endif %}
+
+            {% if is_granted('ROLE_TECHNICIEN') %}
+                <a href="{{ path('app_technicien_dashboard') }}">🏠 Dashboard</a>
+                <a href="{{ path('app_intervention_technicien') }}">📋 Mes interventions</a>
+            {% endif %}
+
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_admin_dashboard') }}">🏠 Dashboard</a>
+                <a href="{{ path('app_intervention_index') }}">📋 Interventions</a>
+                <a href="#">👥 Techniciens</a>
+                <a href="#">🔧 Matériel</a>
+                <a href="#">📦 Stock</a>
+                <a href="#">📅 Planning</a>
+                <a href="#">👤 Clients</a>
+            {% endif %}
+
+            <a href="{{ path('app_logout') }}" class="logout">🚪 Déconnexion</a>
+        </nav>
+    </aside>
+    {% endif %}
+
+    <div class="main">
+
+        <div class="topbar">
+            <h1>{% block page_title %}{% endblock %}</h1>
+            {% if app.user %}
+            <div class="profile">
+                {{ app.user.nomComplet }}
+            </div>
+            {% endif %}
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="flash-success">✓ {{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="flash-error">✗ {{ message }}</div>
+        {% endfor %}
+
         {% block body %}{% endblock %}
-    </body>
+    </div>
+
+    {% block javascripts %}{% endblock %}
+</body>
 </html>
