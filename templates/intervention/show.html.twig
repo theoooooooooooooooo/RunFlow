@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1>Intervention #{{ intervention.id }}</h1>
+
+<div class="card">
+
+    <p><strong>Description :</strong> {{ intervention.description }}</p>
+
+    <p><strong>Statut :</strong> {{ intervention.statut.value }}</p>
+
+    <p><strong>Client :</strong> {{ intervention.client.nomComplet }}</p>
+
+    <p><strong>Technicien :</strong>
+        {{ intervention.technicien ? intervention.technicien.nomComplet : 'Non assigné' }}
+    </p>
+
+    <p><strong>Adresse :</strong> {{ intervention.adresse }}</p>
+
+    <p><strong>Dates :</strong></p>
+    <ul>
+        <li>Demandée : {{ intervention.dateDemande|date('d/m/Y H:i') }}</li>
+        <li>Souhaitée : {{ intervention.dateSouhaitee|date('d/m/Y H:i') }}</li>
+        <li>Planifiée : {{ intervention.datePlanifiee ? intervention.datePlanifiee|date('d/m/Y H:i') : 'Non définie' }}</li>
+    </ul>
+
+</div>
+
+{# ADMIN ONLY #}
+{% if is_granted('ROLE_ADMIN') %}
+    <a href="{{ path('app_intervention_edit', {id: intervention.id}) }}">
+        Modifier
+    </a>
+{% endif %}
+
+{# TECHNICIEN COMMENTAIRE FUTUR #}
+{% if is_granted('ROLE_TECHNICIEN') %}
+    <p>Zone technicien (bientôt : prise en charge / commentaire)</p>
+{% endif %}
+
+<a href="{{ path('app_intervention_index') }}">Retour</a>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1>Créer une intervention</h1>
+
+{{ form_start(form) }}
+
+    {{ form_row(form.description) }}
+    {{ form_row(form.date_souhaitee) }}
+    {{ form_row(form.adresse) }}
+    {{ form_row(form.materiels) }}
+
+    <button class="btn">
+        Envoyer la demande
+    </button>
+
+{{ form_end(form) }}
+
+<a href="{{ path('app_intervention_client') }}">
+    Retour
+</a>
+{% endblock %}

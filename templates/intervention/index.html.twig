@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1>Interventions</h1>
+
+{# CLIENT : bouton création #}
+{% if is_granted('ROLE_CLIENT') %}
+    <a href="{{ path('app_intervention_new') }}" class="btn">
+        + Nouvelle intervention
+    </a>
+{% endif %}
+
+<div class="grid">
+    {% for intervention in interventions %}
+        {% include 'intervention/_card.html.twig' %}
+    {% else %}
+        <p>Aucune intervention</p>
+    {% endfor %}
+</div>
+
+{% endblock %}
