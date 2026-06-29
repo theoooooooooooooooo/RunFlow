@@ -1,43 +1,93 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Intervention #{{ intervention.id }} — Runflow{% endblock %}
+{% block page_title %}Intervention #{{ intervention.id }}{% endblock %}
+
 {% block body %}
-<h1>Intervention #{{ intervention.id }}</h1>
 
-<div class="card">
+<div class="dashboard-section" style="max-width: 800px;">
+    <div class="section-header">
+        <h2>Informations</h2>
+        <span class="badge badge-{{ intervention.statut.value }}">
+            {{ intervention.statut.label() }}
+        </span>
+    </div>
 
-    <p><strong>Description :</strong> {{ intervention.description }}</p>
-
-    <p><strong>Statut :</strong> {{ intervention.statut.value }}</p>
-
-    <p><strong>Client :</strong> {{ intervention.client.nomComplet }}</p>
-
-    <p><strong>Technicien :</strong>
-        {{ intervention.technicien ? intervention.technicien.nomComplet : 'Non assigné' }}
-    </p>
-
-    <p><strong>Adresse :</strong> {{ intervention.adresse }}</p>
-
-    <p><strong>Dates :</strong></p>
-    <ul>
-        <li>Demandée : {{ intervention.dateDemande|date('d/m/Y H:i') }}</li>
-        <li>Souhaitée : {{ intervention.dateSouhaitee|date('d/m/Y H:i') }}</li>
-        <li>Planifiée : {{ intervention.datePlanifiee ? intervention.datePlanifiee|date('d/m/Y H:i') : 'Non définie' }}</li>
-    </ul>
-
+    <table class="table">
+        <tr>
+            <td><strong>Description</strong></td>
+            <td>{{ intervention.description }}</td>
+        </tr>
+        <tr>
+            <td><strong>Adresse</strong></td>
+            <td>{{ intervention.adresse }}</td>
+        </tr>
+        <tr>
+            <td><strong>Date de demande</strong></td>
+            <td>{{ intervention.dateDemande|date('d/m/Y') }}</td>
+        </tr>
+        <tr>
+            <td><strong>Date souhaitée</strong></td>
+            <td>{{ intervention.dateSouhaitee|date('d/m/Y') }}</td>
+        </tr>
+        <tr>
+            <td><strong>Date planifiée</strong></td>
+            <td>
+                {% if intervention.datePlanifiee %}
+                    {{ intervention.datePlanifiee|date('d/m/Y') }}
+                {% else %}
+                    <span class="text-muted">Non planifiée</span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Technicien</strong></td>
+            <td>
+                {% if intervention.technicien %}
+                    {{ intervention.technicien.nomComplet }}
+                {% else %}
+                    <span class="text-muted">Non assigné</span>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
 </div>
 
-{# ADMIN ONLY #}
-{% if is_granted('ROLE_ADMIN') %}
-    <a href="{{ path('app_intervention_edit', {id: intervention.id}) }}">
-        Modifier
-    </a>
+{# ── Commentaire technicien ── #}
+{% if intervention.commentaire %}
+<div class="dashboard-section" style="max-width: 800px;">
+    <h2 style="margin-bottom: 12px;">Commentaire du technicien</h2>
+    <p>{{ intervention.commentaire.contenu }}</p>
+    <small class="text-muted">{{ intervention.commentaire.date|date('d/m/Y') }}</small>
+</div>
 {% endif %}
 
-{# TECHNICIEN COMMENTAIRE FUTUR #}
+{# ── Zone technicien ── #}
 {% if is_granted('ROLE_TECHNICIEN') %}
-    <p>Zone technicien (bientôt : prise en charge / commentaire)</p>
+<div class="dashboard-section" style="max-width: 800px;">
+    <h2 style="margin-bottom: 12px;">Zone technicien</h2>
+    <p class="text-muted">Bientôt : prise en charge et ajout de commentaire.</p>
+</div>
 {% endif %}
 
-<a href="{{ path('app_intervention_index') }}">Retour</a>
+{# ── Boutons retour selon le rôle ── #}
+<div style="margin-top: 16px; display: flex; gap: 12px;">
+    {% if is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_admin_intervention_show', {id: intervention.id}) }}" class="btn btn-primary">
+            Vue admin complète
+        </a>
+        <a href="{{ path('app_admin_intervention_index') }}" class="btn btn-secondary">
+            ← Retour à la liste
+        </a>
+    {% elseif is_granted('ROLE_TECHNICIEN') %}
+        <a href="{{ path('app_intervention_technicien') }}" class="btn btn-secondary">
+            ← Mes interventions
+        </a>
+    {% else %}
+        <a href="{{ path('app_intervention_client') }}" class="btn btn-secondary">
+            ← Mes demandes
+        </a>
+    {% endif %}
+</div>
 
 {% endblock %}

@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Intervention #{{ intervention.id }} — Runflow{% endblock %}
+{% block page_title %}Intervention #{{ intervention.id }}{% endblock %}
+
+{% block body %}
+
+<div style="display: flex; gap: 24px; align-items: flex-start;">
+
+    {# ── Détail ── #}
+    <div style="flex: 1;">
+
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2>Informations</h2>
+                <span class="badge badge-{{ intervention.statut.value }}">
+                    {{ intervention.statut.label() }}
+                </span>
+            </div>
+
+            <table class="table">
+                <tr>
+                    <td><strong>Client</strong></td>
+                    <td>{{ intervention.client.nomComplet }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Numéro de téléphone</strong></td>
+                    <td>{{ intervention.client.telephone }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Description</strong></td>
+                    <td>{{ intervention.description }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Adresse</strong></td>
+                    <td>{{ intervention.adresse }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Date de demande</strong></td>
+                    <td>{{ intervention.dateDemande|date('d/m/Y') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Date souhaitée</strong></td>
+                    <td>{{ intervention.dateSouhaitee|date('d/m/Y') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Date planifiée</strong></td>
+                    <td>
+                        {% if intervention.datePlanifiee %}
+                            {{ intervention.datePlanifiee|date('d/m/Y') }}
+                        {% else %}
+                            <span class="text-muted">Non planifiée</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Technicien</strong></td>
+                    <td>
+                        {% if intervention.technicien %}
+                            {{ intervention.technicien.nomComplet }}
+                        {% else %}
+                            <span class="text-muted">Non assigné</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        {# ── Commentaire ── #}
+        {% if intervention.commentaire %}
+        <div class="dashboard-section">
+            <h2 style="margin-bottom: 12px;">Commentaire du technicien</h2>
+            <p>{{ intervention.commentaire.contenu }}</p>
+            <small class="text-muted">{{ intervention.commentaire.date|date('d/m/Y') }}</small>
+        </div>
+        {% endif %}
+
+    </div>
+
+    {# ── Actions ── #}
+    <div style="width: 300px; display: flex; flex-direction: column; gap: 16px;">
+
+        {# Accepter / Refuser si EN_ATTENTE #}
+        {% if intervention.statut.value == 'en_attente' %}
+        <div class="dashboard-section">
+            <h3 style="margin-bottom: 16px; font-size: 1rem;">Traiter la demande</h3>
+
+            <form method="post"
+                  action="{{ path('app_admin_intervention_accepter', {id: intervention.id}) }}">
+                <input type="hidden" name="_token"
+                       value="{{ csrf_token('accepter' ~ intervention.id) }}">
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 10px;">
+                    ✓ Accepter la demande
+                </button>
+            </form>
+
+            <form method="post"
+                  action="{{ path('app_admin_intervention_refuser', {id: intervention.id}) }}"
+                  onsubmit="return confirm('Confirmer le refus de cette demande ?')">
+                <input type="hidden" name="_token"
+                       value="{{ csrf_token('refuser' ~ intervention.id) }}">
+                <button type="submit" class="btn" style="width: 100%; background: #ef4444;">
+                    ✗ Refuser la demande
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        {# Affectation technicien si ACCEPTEE #}
+        {% if intervention.statut.value == 'acceptee' %}
+        <div class="dashboard-section">
+            <h3 style="margin-bottom: 16px; font-size: 1rem;">Affecter un technicien</h3>
+
+            {{ form_start(affectationForm) }}
+            <div class="form-group">
+                {{ form_label(affectationForm.technicien) }}
+                {{ form_widget(affectationForm.technicien) }}
+                {{ form_errors(affectationForm.technicien) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(affectationForm.date_planifiee) }}
+                {{ form_widget(affectationForm.date_planifiee) }}
+                {{ form_errors(affectationForm.date_planifiee) }}
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                📅 Planifier l'intervention
+            </button>
+            {{ form_end(affectationForm) }}
+        </div>
+        {% endif %}
+
+        {# Modifier #}
+        <a href="{{ path('app_admin_intervention_edit', {id: intervention.id}) }}"
+           class="btn btn-secondary" style="text-align: center;">
+            ✏️ Modifier
+        </a>
+
+        {# Retour #}
+        <a href="{{ path('app_admin_intervention_index') }}"
+           class="btn btn-secondary" style="text-align: center;">
+            ← Retour à la liste
+        </a>
+
+    </div>
+</div>
+
+{% endblock %}

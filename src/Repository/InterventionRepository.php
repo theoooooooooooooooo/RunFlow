@@ -104,4 +104,19 @@ class InterventionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Recherche par le status demande
+     */
+    public function findByStatutString(string $statut): array
+    {
+        $statutEnum = StatutInterventionEnum::from($statut);
+
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.statut = :statut')
+            ->setParameter('statut', $statutEnum)
+            ->orderBy('i.date_demande', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

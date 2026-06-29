@@ -28,7 +28,7 @@
 <div class="dashboard-section">
     <div class="section-header">
         <h2>Demandes en attente</h2>
-        <a href="{{ path('app_intervention_index') }}" class="btn-link">Voir tout →</a>
+        <a href="{{ path('app_admin_intervention_index') }}" class="btn-link">Voir tout →</a>
     </div>
 
     {% if en_attente is empty %}
@@ -54,7 +54,7 @@
                     <td>{{ intervention.adresse }}</td>
                     <td>{{ intervention.dateSouhaitee|date('d/m/Y') }}</td>
                     <td>
-                        <a href="{{ path('app_intervention_show', {id: intervention.id}) }}" class="btn btn-sm btn-primary">
+                        <a href="{{ path('app_admin_intervention_show', {id: intervention.id}) }}" class="btn btn-sm btn-primary">
                             Traiter
                         </a>
                     </td>
@@ -69,7 +69,7 @@
 <div class="dashboard-section">
     <div class="section-header">
         <h2>Activité récente</h2>
-        <a href="{{ path('app_intervention_index') }}" class="btn-link">Voir tout →</a>
+        <a href="{{ path('app_admin_intervention_index') }}" class="btn-link">Voir tout →</a>
     </div>
 
     {% if dernieres is empty %}
@@ -107,7 +107,7 @@
                         </span>
                     </td>
                     <td>
-                        <a href="{{ path('app_intervention_show', {id: intervention.id}) }}" class="btn btn-sm">
+                        <a href="{{ path('app_admin_intervention_show', {id: intervention.id}) }}" class="btn btn-sm">
                             Voir
                         </a>
                     </td>
@@ -147,7 +147,7 @@
 <div class="dashboard-section">
     <h2 style="margin-bottom: 16px">Navigation rapide</h2>
     <div class="quick-nav">
-        <a href="{{ path('app_intervention_index') }}" class="nav-card">
+        <a href="{{ path('app_admin_intervention_index') }}" class="nav-card">
             <span class="nav-icon">📋</span>
             <span>Interventions</span>
         </a>

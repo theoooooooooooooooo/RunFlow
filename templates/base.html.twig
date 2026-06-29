@@ -27,7 +27,7 @@
 
             {% if is_granted('ROLE_ADMIN') %}
                 <a href="{{ path('app_admin_dashboard') }}">🏠 Dashboard</a>
-                <a href="{{ path('app_intervention_index') }}">📋 Interventions</a>
+                <a href="{{ path('app_admin_intervention_index') }}">📋 Interventions</a>  {# ← changer ici #}
                 <a href="#">👥 Techniciens</a>
                 <a href="#">🔧 Matériel</a>
                 <a href="#">📦 Stock</a>
@@ -46,7 +46,11 @@
             <h1>{% block page_title %}{% endblock %}</h1>
             {% if app.user %}
             <div class="profile">
-                {{ app.user.nomComplet }}
+                {% if is_granted('ROLE_ADMIN') %}
+                    {{ app.user.nom }}
+                {% else %}
+                    {{ app.user.nomComplet }}
+                {% endif %}
             </div>
             {% endif %}
         </div>

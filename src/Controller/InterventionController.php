@@ -6,7 +6,6 @@ use App\Entity\Adresse;
 use App\Entity\Intervention;
 use App\Entity\Utilisateur;
 use App\Enum\StatutInterventionEnum;
-use App\Form\InterventionAdminType;
 use App\Form\InterventionClientType;
 use App\Repository\InterventionRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,18 +18,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/intervention')]
 final class InterventionController extends AbstractController
 {
-    /**
-     * Liste de toutes les interventions (Admin)
-     */
-    #[Route('/', name: 'app_intervention_index', methods: ['GET'])]
-    #[IsGranted('ROLE_ADMIN')]
-    public function index(InterventionRepository $repository): Response
-    {
-        return $this->render('intervention/index.html.twig', [
-            'interventions' => $repository->findAll(),
-        ]);
-    }
-
     /**
      * Interventions du client connecté
      */
@@ -76,8 +63,6 @@ final class InterventionController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            // Créer et persister l'adresse
             $adresse = new Adresse();
             $adresse->setRue($form->get('adresse_rue')->getData());
             $adresse->setVille($form->get('adresse_ville')->getData());
@@ -85,7 +70,6 @@ final class InterventionController extends AbstractController
             $adresse->setComplementAdresse($form->get('adresse_complement')->getData());
             $em->persist($adresse);
 
-            // Lier à l'intervention
             $intervention->setAdresse($adresse);
             $intervention->setClient($user);
             $intervention->setDateDemande(new \DateTimeImmutable());
@@ -94,8 +78,7 @@ final class InterventionController extends AbstractController
             $em->persist($intervention);
             $em->flush();
 
-            $this->addFlash('success', 'Votre demande d\'intervention a bien été envoyée.');
-
+            $this->addFlash('success', 'Votre demande a bien été envoyée.');
             return $this->redirectToRoute('app_client_dashboard');
         }
 
@@ -106,7 +89,7 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Détail d'une intervention
+     * Détail d'une intervention (Client + Technicien)
      */
     #[Route('/{id}', name: 'app_intervention_show', methods: ['GET'])]
     public function show(Intervention $intervention): Response
@@ -124,31 +107,6 @@ final class InterventionController extends AbstractController
         }
 
         return $this->render('intervention/show.html.twig', [
-            'intervention' => $intervention,
-        ]);
-    }
-
-    /**
-     * Modification d'une intervention (Admin)
-     */
-    #[Route('/{id}/edit', name: 'app_intervention_edit', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_ADMIN')]
-    public function edit(
-        Request $request,
-        Intervention $intervention,
-        EntityManagerInterface $em
-    ): Response {
-        $form = $this->createForm(InterventionAdminType::class, $intervention);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            $this->addFlash('success', 'Intervention mise à jour avec succès.');
-            return $this->redirectToRoute('app_intervention_index');
-        }
-
-        return $this->render('intervention/edit.html.twig', [
-            'form'         => $form,
             'intervention' => $intervention,
         ]);
     }
