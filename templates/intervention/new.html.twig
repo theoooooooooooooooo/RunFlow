@@ -1,22 +1,62 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Nouvelle demande — Runflow{% endblock %}
+{% block page_title %}Nouvelle demande d'intervention{% endblock %}
+
 {% block body %}
-<h1>Créer une intervention</h1>
 
-{{ form_start(form) }}
+<div class="dashboard-section" style="max-width: 700px;">
 
-    {{ form_row(form.description) }}
-    {{ form_row(form.date_souhaitee) }}
-    {{ form_row(form.adresse) }}
-    {{ form_row(form.materiels) }}
+    {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
 
-    <button class="btn">
-        Envoyer la demande
-    </button>
+    <div class="form-group">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description) }}
+        {{ form_errors(form.description) }}
+    </div>
 
-{{ form_end(form) }}
+    <div class="form-group">
+        {{ form_label(form.date_souhaitee) }}
+        {{ form_widget(form.date_souhaitee) }}
+        {{ form_errors(form.date_souhaitee) }}
+    </div>
 
-<a href="{{ path('app_intervention_client') }}">
-    Retour
-</a>
+    <hr style="margin: 24px 0; border-color: #e5e7eb;">
+    <h3 style="margin-bottom: 16px; font-size: 1rem; color: #374151;">Adresse d'intervention</h3>
+
+    <div class="form-row">
+        <div class="form-group">
+            {{ form_label(form.adresse_rue) }}
+            {{ form_widget(form.adresse_rue) }}
+            {{ form_errors(form.adresse_rue) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.adresse_ville) }}
+            {{ form_widget(form.adresse_ville) }}
+            {{ form_errors(form.adresse_ville) }}
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            {{ form_label(form.adresse_code_postal) }}
+            {{ form_widget(form.adresse_code_postal) }}
+            {{ form_errors(form.adresse_code_postal) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.adresse_complement) }}
+            {{ form_widget(form.adresse_complement) }}
+            {{ form_errors(form.adresse_complement) }}
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="submit" class="btn btn-primary">Envoyer ma demande</button>
+        <a href="{{ path('app_client_dashboard') }}" class="btn btn-secondary">Annuler</a>
+    </div>
+
+    {{ form_end(form) }}
+
+</div>
+
 {% endblock %}

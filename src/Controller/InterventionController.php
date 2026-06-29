@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\Adresse;
 use App\Entity\Intervention;
 use App\Entity\Utilisateur;
 use App\Enum\StatutInterventionEnum;
-use App\Form\InterventionType;
+use App\Form\InterventionAdminType;
+use App\Form\InterventionClientType;
 use App\Repository\InterventionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class InterventionController extends AbstractController
 {
     /**
-     * Liste de toutes les interventions (Administrateur)
+     * Liste de toutes les interventions (Admin)
      */
     #[Route('/', name: 'app_intervention_index', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
@@ -39,11 +41,8 @@ final class InterventionController extends AbstractController
         /** @var Utilisateur $user */
         $user = $this->getUser();
 
-        return $this->render('intervention/index.html.twig', [
-            'interventions' => $repository->findBy(
-                ['client' => $user],
-                ['date_demande' => 'DESC']
-            ),
+        return $this->render('intervention/client_index.html.twig', [
+            'interventions' => $repository->findByClient($user),
         ]);
     }
 
@@ -57,11 +56,8 @@ final class InterventionController extends AbstractController
         /** @var Utilisateur $user */
         $user = $this->getUser();
 
-        return $this->render('intervention/index.html.twig', [
-            'interventions' => $repository->findBy(
-                ['technicien' => $user],
-                ['date_planifiee' => 'ASC']
-            ),
+        return $this->render('intervention/technicien_index.html.twig', [
+            'interventions' => $repository->findByTechnicien($user),
         ]);
     }
 
@@ -70,34 +66,41 @@ final class InterventionController extends AbstractController
      */
     #[Route('/new', name: 'app_intervention_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CLIENT')]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $em): Response
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
 
         $intervention = new Intervention();
-
-        $form = $this->createForm(InterventionType::class, $intervention);
+        $form = $this->createForm(InterventionClientType::class, $intervention);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
+            // Créer et persister l'adresse
+            $adresse = new Adresse();
+            $adresse->setRue($form->get('adresse_rue')->getData());
+            $adresse->setVille($form->get('adresse_ville')->getData());
+            $adresse->setCodePostal($form->get('adresse_code_postal')->getData());
+            $adresse->setComplementAdresse($form->get('adresse_complement')->getData());
+            $em->persist($adresse);
+
+            // Lier à l'intervention
+            $intervention->setAdresse($adresse);
             $intervention->setClient($user);
-
             $intervention->setDateDemande(new \DateTimeImmutable());
-
             $intervention->setStatut(StatutInterventionEnum::EN_ATTENTE);
 
-            $entityManager->persist($intervention);
-            $entityManager->flush();
+            $em->persist($intervention);
+            $em->flush();
 
-            $this->addFlash('success', 'Votre demande d\'intervention a bien été créée.');
+            $this->addFlash('success', 'Votre demande d\'intervention a bien été envoyée.');
 
-            return $this->redirectToRoute('app_intervention_client');
+            return $this->redirectToRoute('app_client_dashboard');
         }
 
         return $this->render('intervention/new.html.twig', [
-            'form' => $form,
+            'form'         => $form,
             'intervention' => $intervention,
         ]);
     }
@@ -112,18 +115,10 @@ final class InterventionController extends AbstractController
         $user = $this->getUser();
 
         if (!$this->isGranted('ROLE_ADMIN')) {
-
-            if (
-                $this->isGranted('ROLE_CLIENT')
-                && $intervention->getClient() !== $user
-            ) {
+            if ($this->isGranted('ROLE_CLIENT') && $intervention->getClient() !== $user) {
                 throw $this->createAccessDeniedException();
             }
-
-            if (
-                $this->isGranted('ROLE_TECHNICIEN')
-                && $intervention->getTechnicien() !== $user
-            ) {
+            if ($this->isGranted('ROLE_TECHNICIEN') && $intervention->getTechnicien() !== $user) {
                 throw $this->createAccessDeniedException();
             }
         }
@@ -134,31 +129,26 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Modification d'une intervention (Administrateur)
+     * Modification d'une intervention (Admin)
      */
     #[Route('/{id}/edit', name: 'app_intervention_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function edit(
         Request $request,
         Intervention $intervention,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $em
     ): Response {
-
-        $form = $this->createForm(InterventionType::class, $intervention);
-
+        $form = $this->createForm(InterventionAdminType::class, $intervention);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Intervention mise à jour.');
-
+            $em->flush();
+            $this->addFlash('success', 'Intervention mise à jour avec succès.');
             return $this->redirectToRoute('app_intervention_index');
         }
 
         return $this->render('intervention/edit.html.twig', [
-            'form' => $form,
+            'form'         => $form,
             'intervention' => $intervention,
         ]);
     }

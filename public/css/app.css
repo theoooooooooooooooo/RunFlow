@@ -308,4 +308,55 @@ a { text-decoration: none; color: inherit; }
     .menu { flex-direction: row; flex-wrap: wrap; gap: 6px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .dashboard-grid { grid-template-columns: 1fr; }
-    .grid
+    .grid { grid-template-columns: 1fr; }
+    nav { gap: .75rem; padding: 0 1rem; overflow-x: auto; }
+}
+
+/* ─── Formulaires ─── */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    font-size: .9rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: .95rem;
+    background: #fff;
+    transition: border-color .15s;
+    width: 100%;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+}
+
+.form-group .form-error {
+    color: #ef4444;
+    font-size: .82rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 640px) {
+    .form-row { grid-template-columns: 1fr; }
+}
