@@ -5,13 +5,12 @@ namespace App\Form;
 use App\Entity\Adresse;
 use App\Entity\Intervention;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Future;
 
 class InterventionClientType extends AbstractType
 {
@@ -26,9 +25,15 @@ class InterventionClientType extends AbstractType
                 ],
                 'constraints' => [new NotBlank(message: 'La description est obligatoire.')],
             ])
-            ->add('date_souhaitee', DateType::class, [
-                'label'   => 'Date d\'intervention souhaitée',
-                'widget'  => 'single_text',
+            ->add('date_souhaitee', DateTimeType::class, [
+                'label'       => 'Date et heure souhaitées',
+                'widget'      => 'single_text',
+                'input'       => 'datetime_immutable',
+                'attr'        => [
+                    'id'          => 'date-souhaitee-picker',
+                    'placeholder' => 'Choisissez une date et une heure',
+                    'autocomplete' => 'off',
+                ],
                 'constraints' => [new NotBlank(message: 'Veuillez indiquer une date souhaitée.')],
             ])
             // Champs adresse embarqués directement

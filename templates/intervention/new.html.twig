@@ -3,6 +3,10 @@
 {% block title %}Nouvelle demande — Runflow{% endblock %}
 {% block page_title %}Nouvelle demande d'intervention{% endblock %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('vendor/flatpickr/flatpickr.min.css') }}">
+{% endblock %}
+
 {% block body %}
 
 <div class="dashboard-section" style="max-width: 700px;">
@@ -19,6 +23,7 @@
         {{ form_label(form.date_souhaitee) }}
         {{ form_widget(form.date_souhaitee) }}
         {{ form_errors(form.date_souhaitee) }}
+        <small class="text-muted">Créneaux disponibles : lundi au vendredi, 8h – 18h</small>
     </div>
 
     <hr style="margin: 24px 0; border-color: #e5e7eb;">
@@ -59,4 +64,35 @@
 
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('vendor/flatpickr/flatpickr.min.js') }}"></script>
+<script src="{{ asset('vendor/flatpickr/fr.js') }}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('date-souhaitee-picker');
+
+        if (input) {
+            flatpickr(input, {
+                locale: 'fr',
+                enableTime: true,
+                dateFormat: 'Y-m-d H:i',
+                altInput: true,
+                altFormat: 'j F Y à H:i',
+                minDate: 'today',
+                minTime: '08:00',
+                maxTime: '18:00',
+                disable: [
+                    function (date) {
+                        // Désactive samedi (6) et dimanche (0)
+                        return date.getDay() === 0 || date.getDay() === 6;
+                    }
+                ],
+                time_24hr: true,
+            });
+        }
+    });
+</script>
 {% endblock %}
