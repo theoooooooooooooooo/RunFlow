@@ -24,7 +24,7 @@
                     <td>{{ intervention.client.nomComplet }}</td>
                 </tr>
                 <tr>
-                    <td><strong>Numéro de téléphone</strong></td>
+                    <td><strong>Téléphone</strong></td>
                     <td>{{ intervention.client.telephone }}</td>
                 </tr>
                 <tr>
@@ -41,13 +41,13 @@
                 </tr>
                 <tr>
                     <td><strong>Date souhaitée</strong></td>
-                    <td>{{ intervention.dateSouhaitee|date('d/m/Y') }}</td>
+                    <td>{{ intervention.dateSouhaitee|date('d/m/Y H:i') }}</td>
                 </tr>
                 <tr>
                     <td><strong>Date planifiée</strong></td>
                     <td>
                         {% if intervention.datePlanifiee %}
-                            {{ intervention.datePlanifiee|date('d/m/Y') }}
+                            {{ intervention.datePlanifiee|date('d/m/Y H:i') }}
                         {% else %}
                             <span class="text-muted">Non planifiée</span>
                         {% endif %}
@@ -78,7 +78,7 @@
     </div>
 
     {# ── Actions ── #}
-    <div style="width: 300px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="width: 700px; display: flex; flex-direction: column; gap: 16px;">
 
         {# Accepter / Refuser si EN_ATTENTE #}
         {% if intervention.statut.value == 'en_attente' %}
@@ -99,7 +99,7 @@
                   onsubmit="return confirm('Confirmer le refus de cette demande ?')">
                 <input type="hidden" name="_token"
                        value="{{ csrf_token('refuser' ~ intervention.id) }}">
-                <button type="submit" class="btn" style="width: 100%; background: #ef4444;">
+                <button type="submit" class="btn" style="width: 100%; background: #ef4444; color:white;">
                     ✗ Refuser la demande
                 </button>
             </form>
@@ -112,19 +112,38 @@
             <h3 style="margin-bottom: 16px; font-size: 1rem;">Affecter un technicien</h3>
 
             {{ form_start(affectationForm) }}
+
             <div class="form-group">
                 {{ form_label(affectationForm.technicien) }}
                 {{ form_widget(affectationForm.technicien) }}
                 {{ form_errors(affectationForm.technicien) }}
             </div>
+
             <div class="form-group">
-                {{ form_label(affectationForm.date_planifiee) }}
-                {{ form_widget(affectationForm.date_planifiee) }}
-                {{ form_errors(affectationForm.date_planifiee) }}
+                {{ form_label(affectationForm.duree_estimee) }}
+                {{ form_widget(affectationForm.duree_estimee) }}
+                {{ form_errors(affectationForm.duree_estimee) }}
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%;">
+
+            {# Créneau sélectionné affiché #}
+            <div id="creneau-selectionne" style="display:none; margin-bottom: 12px;">
+                <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 10px 14px; font-size: .9rem;">
+                    📅 <strong id="creneau-label"></strong>
+                    <button type="button" onclick="reinitialiserCreneau()"
+                            style="float:right; background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
+                </div>
+            </div>
+
+            {# Champ caché rempli par FullCalendar #}
+            {{ form_widget(affectationForm.date_planifiee, {attr: {style: 'display:none'}}) }}
+
+            {# Mini calendrier FullCalendar #}
+            <div id="mini-calendar" style="margin-bottom: 16px; font-size: .82rem;"></div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-planifier" disabled>
                 📅 Planifier l'intervention
             </button>
+
             {{ form_end(affectationForm) }}
         </div>
         {% endif %}
@@ -144,4 +163,136 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('vendor/fullcalendar/index.global.min.js') }}"></script>
+
+<script>
+    const apiUrl = '{{ path('app_admin_planning_creneaux') }}';
+    let calendarInstance = null;
+    let evenementTemporaire = null;
+
+
+    // Locale française définie manuellement (évite la dépendance CDN)
+    const localeFr = {
+        code: 'fr',
+        week: { dow: 1, doy: 4 },
+        buttonText: {
+            prev: 'préc.', next: 'suiv.', today: "aujourd'hui",
+            month: 'mois', week: 'semaine', day: 'jour', list: 'liste',
+        },
+        weekText: 'Sem.',
+        allDayText: 'Toute la journée',
+        moreLinkText: 'en plus',
+        noEventsText: 'Aucun événement à afficher',
+        dayHeaderFormat: { weekday: 'long' },
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectTechnicien = document.getElementById('affectation_technicien_technicien');
+
+        if (selectTechnicien) {
+            initialiserCalendrier(selectTechnicien.value);
+
+            selectTechnicien.addEventListener('change', function () {
+                reinitialiserCreneau();
+                calendarInstance.refetchEvents();
+            });
+        }
+    });
+
+    function initialiserCalendrier(technicienId) {
+        const calendarEl = document.getElementById('mini-calendar');
+        if (!calendarEl) return;
+
+        calendarInstance = new FullCalendar.Calendar(calendarEl, {
+            locales: [localeFr],
+            locale: 'fr',
+            initialView: 'timeGridWeek',
+            headerToolbar: {
+                left:   'prev,next',
+                center: 'title',
+                right:  'today'
+            },
+            height: 400,
+            slotMinTime: '07:00:00',
+            slotMaxTime: '20:00:00',
+            allDaySlot: false,
+            nowIndicator: true,
+            selectable: true,
+            selectMirror: true,
+            businessHours: {
+                daysOfWeek: [1, 2, 3, 4, 5],
+                startTime: '08:00',
+                endTime: '18:00',
+            },
+            events: function (info, successCallback, failureCallback) {
+                const tid = document.getElementById('affectation_technicien_technicien')?.value;
+                const url = tid ? `${apiUrl}?technicien_id=${tid}` : apiUrl;
+
+                fetch(url)
+                    .then(r => r.json())
+                    .then(data => successCallback(data))
+                    .catch(() => failureCallback());
+            },
+            eventClick: function (info) {
+                alert('Ce créneau est déjà occupé par ' + (info.event.extendedProps.technicien ?? 'un technicien'));
+            },
+
+            select: function (info) {
+                const debut = info.start;
+                const dureeSelect = document.getElementById('affectation_technicien_duree_estimee');
+                const dureeMinutes = dureeSelect ? parseInt(dureeSelect.value) : 120;
+
+                const fin = new Date(debut.getTime() + dureeMinutes * 60000);
+
+                const label = debut.toLocaleString('fr-FR', {
+                    weekday: 'long', day: '2-digit', month: 'long',
+                    year: 'numeric', hour: '2-digit', minute: '2-digit',
+                });
+
+                const input = document.getElementById('affectation_technicien_date_planifiee');
+                if (input) {
+                    input.value = formatDateTimeLocal(debut);
+                }
+
+                document.getElementById('creneau-label').textContent = label;
+                document.getElementById('creneau-selectionne').style.display = 'block';
+                document.getElementById('btn-planifier').disabled = false;
+
+                if (evenementTemporaire) {
+                    evenementTemporaire.remove();
+                }
+
+                evenementTemporaire = calendarInstance.addEvent({
+                    title: '✓ Créneau choisi',
+                    start: debut,
+                    end: fin,
+                    backgroundColor: '#2563eb',
+                    borderColor: '#1d4ed8',
+                    textColor: '#fff',
+                });
+            },
+        });
+
+        calendarInstance.render();
+    }
+
+    function reinitialiserCreneau() {
+        document.getElementById('affectation_technicien_date_planifiee').value = '';
+        document.getElementById('creneau-selectionne').style.display = 'none';
+        document.getElementById('btn-planifier').disabled = true;
+
+        if (evenementTemporaire) {
+            evenementTemporaire.remove();
+            evenementTemporaire = null;
+        }
+    }
+
+    function formatDateTimeLocal(date) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+</script>
 {% endblock %}

@@ -119,4 +119,18 @@ class InterventionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findPlanifiees(): array
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.date_planifiee IS NOT NULL')
+            ->andWhere('i.statut NOT IN (:statuts)')
+            ->setParameter('statuts', [
+                StatutInterventionEnum::ANNULEE,
+                StatutInterventionEnum::REFUSEE,
+            ])
+            ->orderBy('i.date_planifiee', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

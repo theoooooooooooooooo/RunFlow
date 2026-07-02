@@ -381,3 +381,14 @@ a { text-decoration: none; color: inherit; }
 
 .filter-btn:hover { background: #f3f4f6; }
 .filter-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
+
+
+/* ─── Planning ─── */
+.filtre-select {
+    padding: 8px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: .9rem;
+    background: white;
+    cursor: pointer;
+}

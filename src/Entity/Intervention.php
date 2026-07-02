@@ -23,8 +23,11 @@ class Intervention
     #[ORM\Column]
     private ?\DateTimeImmutable $date_souhaitee = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $date_planifiee = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $duree_estimee = null; // en minutes
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
@@ -96,6 +99,30 @@ class Intervention
         $this->date_planifiee = $date_planifiee;
 
         return $this;
+    }
+
+    public function getDureeEstimee(): ?int
+    {
+        return $this->duree_estimee;
+    }
+
+    public function setDureeEstimee(?int $duree_estimee): static
+    {
+        $this->duree_estimee = $duree_estimee;
+        return $this;
+    }
+
+    /**
+     * Calcule la date de fin d'intervention à partir de la date planifiée + durée
+     */
+    public function getDateFinPlanifiee(): ?\DateTimeImmutable
+    {
+        if (!$this->date_planifiee) {
+            return null;
+        }
+
+        $duree = $this->duree_estimee ?? 120; // 2h par défaut si non renseignée
+        return $this->date_planifiee->modify("+{$duree} minutes");
     }
 
     public function getDescription(): ?string

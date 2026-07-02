@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planning — Runflow{% endblock %}
+{% block page_title %}Planning des interventions{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-section">
+
+    {# ── Filtre technicien ── #}
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
+        <label style="font-weight: 600;">Filtrer par technicien :</label>
+        <select id="filtre-technicien" class="filtre-select">
+            <option value="">Tous les techniciens</option>
+            {% for technicien in techniciens %}
+                <option value="{{ technicien.id }}">{{ technicien.nomComplet }}</option>
+            {% endfor %}
+        </select>
+        <span id="legende" style="display: flex; gap: 10px; flex-wrap: wrap;"></span>
+    </div>
+
+    {# ── Calendrier ── #}
+    <div id="calendar"></div>
+
+</div>
+
+{# ── Modal détail événement ── #}
+<div id="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:16px; padding:28px; width:400px; max-width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2);">
+        <h3 id="modal-title" style="margin-bottom:16px; font-size:1.1rem;"></h3>
+        <table class="table">
+            <tr><td><strong>Technicien</strong></td><td id="modal-technicien"></td></tr>
+            <tr><td><strong>Adresse</strong></td><td id="modal-adresse"></td></tr>
+            <tr><td><strong>Statut</strong></td><td id="modal-statut"></td></tr>
+            <tr><td><strong>Date</strong></td><td id="modal-date"></td></tr>
+        </table>
+        <div style="margin-top:16px; text-align:right;">
+            <button onclick="fermerModal()" class="btn btn-secondary">Fermer</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('vendor/fullcalendar/index.global.min.js') }}"></script>
+
+<script>
+    let calendar;
+    const apiUrl = '{{ path('app_admin_planning_creneaux') }}';
+
+    const localeFr = {
+        code: 'fr',
+        week: { dow: 1, doy: 4 },
+        buttonText: {
+            prev: 'préc.', next: 'suiv.', today: "aujourd'hui",
+            month: 'mois', week: 'semaine', day: 'jour', list: 'liste',
+        },
+        weekText: 'Sem.',
+        allDayText: 'Toute la journée',
+        moreLinkText: 'en plus',
+        noEventsText: 'Aucun événement à afficher',
+        dayHeaderFormat: { weekday: 'long' },
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            locales: [localeFr],
+            locale: 'fr',
+            initialView: 'timeGridWeek',
+            headerToolbar: {
+                left:   'prev,next today',
+                center: 'title',
+                right:  'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            slotMinTime: '07:00:00',
+            slotMaxTime: '20:00:00',
+            allDaySlot: false,
+            height: 'auto',
+            nowIndicator: true,
+            businessHours: {
+                daysOfWeek: [1, 2, 3, 4, 5],
+                startTime: '08:00',
+                endTime: '18:00',
+            },
+            events: function (info, successCallback, failureCallback) {
+                const technicienId = document.getElementById('filtre-technicien').value;
+                const url = technicienId
+                    ? `${apiUrl}?technicien_id=${technicienId}`
+                    : apiUrl;
+
+                fetch(url)
+                    .then(r => r.json())
+                    .then(data => successCallback(data))
+                    .catch(() => failureCallback());
+            },
+            eventClick: function (info) {
+                ouvrirModal(info.event);
+            },
+        });
+
+        calendar.render();
+
+        document.getElementById('filtre-technicien').addEventListener('change', function () {
+            calendar.refetchEvents();
+        });
+    });
+
+    function ouvrirModal(event) {
+        const props = event.extendedProps;
+        document.getElementById('modal-title').textContent = event.title;
+        document.getElementById('modal-technicien').textContent = props.technicien ?? '—';
+        document.getElementById('modal-adresse').textContent = props.adresse ?? '—';
+        document.getElementById('modal-statut').textContent = props.statut ?? '—';
+        document.getElementById('modal-date').textContent = event.start.toLocaleString('fr-FR');
+
+        document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    function fermerModal() {
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
+
+    document.getElementById('modal-overlay').addEventListener('click', function (e) {
+        if (e.target === this) fermerModal();
+    });
+</script>
+{% endblock %}
