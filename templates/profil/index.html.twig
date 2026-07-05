@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil — Runflow{% endblock %}
+{% block page_title %}Mon profil{% endblock %}
+
+{% block body %}
+
+<div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+
+    {# ── Formulaire infos ── #}
+    <div class="dashboard-section" style="flex: 1; min-width: 320px;">
+        <h2 style="margin-bottom: 16px;">Informations personnelles</h2>
+
+        {{ form_start(form) }}
+
+        <div class="form-row">
+            <div class="form-group">
+                {{ form_label(form.prenom) }}
+                {{ form_widget(form.prenom) }}
+                {{ form_errors(form.prenom) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.nom) }}
+                {{ form_widget(form.nom) }}
+                {{ form_errors(form.nom) }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="text" value="{{ user.email }}" disabled
+                   style="background:#f3f4f6; color:#6b7280;">
+            <small class="text-muted">L'email ne peut pas être modifié.</small>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.telephone) }}
+            {{ form_widget(form.telephone) }}
+            {{ form_errors(form.telephone) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+
+        {{ form_end(form) }}
+    </div>
+
+    {# ── Actions latérales ── #}
+    <div style="width: 320px; display: flex; flex-direction: column; gap: 16px;">
+
+        <div class="dashboard-section">
+            <h3 style="margin-bottom: 12px; font-size: 1rem;">Sécurité</h3>
+            <a href="{{ path('app_profil_password') }}" class="btn btn-secondary" style="width:100%; text-align:center;">
+                🔒 Changer mon mot de passe
+            </a>
+        </div>
+
+        <div class="dashboard-section">
+            <h3 style="margin-bottom: 12px; font-size: 1rem;">Mes données (RGPD)</h3>
+            <a href="{{ path('app_profil_donnees') }}" class="btn btn-secondary" style="width:100%; text-align:center;">
+                📄 Consulter mes données personnelles
+            </a>
+        </div>
+
+        {% if is_granted('ROLE_CLIENT') %}
+        <div class="dashboard-section section-alert">
+            <h3 style="margin-bottom: 12px; font-size: 1rem; color:#991b1b;">Zone de danger</h3>
+            <p style="font-size:.85rem; color:#6b7280; margin-bottom:12px;">
+                La suppression de votre compte anonymisera définitivement vos données personnelles.
+                Cette action est irréversible.
+            </p>
+            <form method="post" action="{{ path('app_profil_supprimer') }}"
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.')">
+                <input type="hidden" name="_token" value="{{ csrf_token('supprimer_compte') }}">
+                <button type="submit" class="btn" style="width:100%; background:#ef4444; color:white;">
+                    🗑️ Supprimer mon compte
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

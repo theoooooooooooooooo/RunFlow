@@ -34,6 +34,9 @@
                 <a href="{{ path('app_admin_planning') }}">📅 Planning</a>
                 <a href="#">👤 Clients</a>
             {% endif %}
+            {% if app.user %}
+                <a href="{{ path('app_profil') }}">👤 Mon profil</a>
+            {% endif %}
 
             <a href="{{ path('app_logout') }}" class="logout">🚪 Déconnexion</a>
         </nav>
