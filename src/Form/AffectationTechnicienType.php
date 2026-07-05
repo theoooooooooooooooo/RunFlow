@@ -28,6 +28,7 @@ class AffectationTechnicienType extends AbstractType
                     $repo->createQueryBuilder('u')
                         ->andWhere('u.roles LIKE :role')
                         ->setParameter('role', '%ROLE_TECHNICIEN%')
+                        ->andWhere('u.actif = true')
                         ->orderBy('u.nom', 'ASC'),
             ])
             ->add('duree_estimee', ChoiceType::class, [

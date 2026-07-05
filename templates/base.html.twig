@@ -28,7 +28,7 @@
             {% if is_granted('ROLE_ADMIN') %}
                 <a href="{{ path('app_admin_dashboard') }}">🏠 Dashboard</a>
                 <a href="{{ path('app_admin_intervention_index') }}">📋 Interventions</a>  {# ← changer ici #}
-                <a href="#">👥 Techniciens</a>
+                <a href="{{ path('app_admin_technicien_index') }}">👥 Techniciens</a>
                 <a href="#">🔧 Matériel</a>
                 <a href="#">📦 Stock</a>
                 <a href="{{ path('app_admin_planning') }}">📅 Planning</a>

@@ -44,6 +44,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 20)]
     private ?string $telephone = null;
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $actif = true;
+
     /**
      * @var Collection<int, Intervention>
      */
@@ -180,6 +183,17 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->telephone = $telephone;
 
+        return $this;
+    }
+
+    public function isActif(): bool
+    {
+        return $this->actif;
+    }
+
+    public function setActif(bool $actif): static
+    {
+        $this->actif = $actif;
         return $this;
     }
 
