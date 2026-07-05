@@ -63,10 +63,33 @@
 {% endif %}
 
 {# ── Zone technicien ── #}
-{% if is_granted('ROLE_TECHNICIEN') %}
+{% if is_granted('ROLE_TECHNICIEN') and intervention.technicien == app.user %}
 <div class="dashboard-section" style="max-width: 800px;">
-    <h2 style="margin-bottom: 12px;">Zone technicien</h2>
-    <p class="text-muted">Bientôt : prise en charge et ajout de commentaire.</p>
+    <h2 style="margin-bottom: 16px;">Zone technicien</h2>
+
+    {% if intervention.statut.value == 'planifiee' %}
+        <p style="margin-bottom: 12px; color:#6b7280;">
+            Cette intervention est planifiée. Démarrez-la lorsque vous êtes sur place.
+        </p>
+        <form method="post" action="{{ path('app_technicien_intervention_demarrer', {id: intervention.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('demarrer' ~ intervention.id) }}">
+            <button type="submit" class="btn btn-primary">
+                ▶️ Démarrer l'intervention
+            </button>
+        </form>
+
+    {% elseif intervention.statut.value == 'en_cours' %}
+        <p style="margin-bottom: 12px; color:#6b7280;">
+            Intervention en cours. Ajoutez un commentaire et validez une fois le travail terminé.
+        </p>
+        <a href="{{ path('app_technicien_intervention_valider', {id: intervention.id}) }}" class="btn btn-primary">
+            ✓ Valider l'intervention
+        </a>
+
+    {% elseif intervention.statut.value == 'terminee' %}
+        <p style="color:#10b981;">✓ Intervention terminée.</p>
+    {% endif %}
+
 </div>
 {% endif %}
 
