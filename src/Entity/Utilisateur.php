@@ -62,6 +62,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Commentaire::class, mappedBy: 'auteur')]
     private Collection $commentaires;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $date_anonymisation = null;
+
     public function __construct()
     {
         $this->interventionsClient = new ArrayCollection();
@@ -272,6 +275,17 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
 
+        return $this;
+    }
+
+    public function getDateAnonymisation(): ?\DateTimeImmutable
+    {
+        return $this->date_anonymisation;
+    }
+
+    public function setDateAnonymisation(?\DateTimeImmutable $date_anonymisation): static
+    {
+        $this->date_anonymisation = $date_anonymisation;
         return $this;
     }
 }

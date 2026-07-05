@@ -24,6 +24,35 @@
     </div>
 </div>
 
+{# ── Comptes anonymisés récemment (RGPD) ── #}
+{% if comptes_anonymises is not empty %}
+<div class="dashboard-section section-alert">
+    <div class="section-header">
+        <h2>🔔 Suppressions de compte récentes</h2>
+    </div>
+    <p style="font-size:.85rem; color:#6b7280; margin-bottom:12px;">
+        Ces clients ont supprimé leur compte (RGPD). Vérifiez qu'aucune intervention
+        en cours ne nécessite un suivi avec eux.
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Compte</th>
+                <th>Date de suppression</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for compte in comptes_anonymises %}
+            <tr>
+                <td>#{{ compte.id }} <span class="text-muted">(anonymisé)</span></td>
+                <td>{{ compte.dateAnonymisation|date('d/m/Y H:i') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
 {# ── Demandes en attente ── #}
 <div class="dashboard-section">
     <div class="section-header">

@@ -103,17 +103,16 @@ final class ProfilController extends AbstractController
             return $this->redirectToRoute('app_profil');
         }
 
-        // Anonymisation des données personnelles (conserve l'historique des interventions)
         $user->setNom('Utilisateur');
         $user->setPrenom('Anonymisé');
         $user->setEmail('anonyme_' . $user->getId() . '_' . uniqid() . '@runflow.local');
         $user->setTelephone('0000000000');
-        $user->setPassword(bin2hex(random_bytes(32))); // mot de passe inutilisable
+        $user->setPassword(bin2hex(random_bytes(32)));
         $user->setRoles(['ROLE_ANONYMISE']);
+        $user->setDateAnonymisation(new \DateTimeImmutable()); // ← ajouté
 
         $em->flush();
 
-        // Déconnexion
         $this->container->get('security.token_storage')->setToken(null);
         $request->getSession()->invalidate();
 

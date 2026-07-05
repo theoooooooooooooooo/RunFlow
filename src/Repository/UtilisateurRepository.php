@@ -67,4 +67,20 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Comptes anonymisés récemment (48h) — pour notification admin
+     */
+    public function findRecemmentAnonymises(int $heures = 48): array
+    {
+        $seuil = new \DateTimeImmutable("-{$heures} hours");
+
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.date_anonymisation IS NOT NULL')
+            ->andWhere('u.date_anonymisation >= :seuil')
+            ->setParameter('seuil', $seuil)
+            ->orderBy('u.date_anonymisation', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }
