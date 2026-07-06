@@ -74,7 +74,28 @@
             <small class="text-muted">{{ intervention.commentaire.date|date('d/m/Y') }}</small>
         </div>
         {% endif %}
-
+        {# ── Matériel utilisé ── #}
+        {% if intervention.materielInterventions is not empty %}
+        <div class="dashboard-section">
+            <h2 style="margin-bottom: 12px;">Matériel prévu pour l'intervention</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Matériel</th>
+                        <th>Quantité</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mi in intervention.materielInterventions %}
+                    <tr>
+                        <td>{{ mi.materiel.nom }}</td>
+                        <td>{{ mi.quantite }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
     </div>
 
     {# ── Actions ── #}
@@ -106,10 +127,12 @@
         </div>
         {% endif %}
 
-        {# Affectation technicien si ACCEPTEE #}
-        {% if intervention.statut.value == 'acceptee' %}
+        {# Affectation technicien si ACCEPTEE ou déjà PLANIFIEE (modification) #}
+        {% if intervention.statut.value in ['acceptee', 'planifiee'] %}
         <div class="dashboard-section">
-            <h3 style="margin-bottom: 16px; font-size: 1rem;">Affecter un technicien</h3>
+            <h3 style="margin-bottom: 16px; font-size: 1rem;">
+                {{ intervention.statut.value == 'planifiee' ? 'Modifier l\'affectation' : 'Affecter un technicien' }}
+            </h3>
 
             {{ form_start(affectationForm) }}
 
@@ -136,14 +159,77 @@
 
             {# Champ caché rempli par FullCalendar #}
             {{ form_widget(affectationForm.date_planifiee, {attr: {style: 'display:none'}}) }}
+            <div class="form-group">
+                <label>Matériel nécessaire</label>
 
+                <div id="materiel-list" class="materiel-scroll-list"
+                    data-prototype="{{ form_widget(affectationForm.materielInterventions.vars.prototype)|e('html_attr') }}">
+                    {% for materielForm in affectationForm.materielInterventions %}
+                        <div class="materiel-row-hidden" data-materiel-id="{{ materielForm.vars.value.materiel ? materielForm.vars.value.materiel.id : '' }}">
+                            {{ form_widget(materielForm.materiel) }}
+                            {{ form_widget(materielForm.quantite) }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div id="materiel-affichage" class="materiel-scroll-list">
+                    {% for materielForm in affectationForm.materielInterventions %}
+                        {% set mi = materielForm.vars.value %}
+                        {% if mi.materiel %}
+                        <div class="materiel-item" data-materiel-id="{{ mi.materiel.id }}">
+                            <span>{{ mi.materiel.nom }} × {{ mi.quantite }}</span>
+                            <button type="button" class="retirer-materiel">✕</button>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <button type="button" id="ouvrir-modal-materiel" class="btn btn-secondary btn-sm" style="margin-top: 8px;">
+                    + Ajouter un matériel
+                </button>
+            </div>
             {# Mini calendrier FullCalendar #}
             <div id="mini-calendar" style="margin-bottom: 16px; font-size: .82rem;"></div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-planifier" disabled>
-                📅 Planifier l'intervention
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-planifier"
+                    {{ intervention.statut.value == 'acceptee' ? 'disabled' : '' }}>
+                {{ intervention.statut.value == 'planifiee' ? '💾 Enregistrer les modifications' : '📅 Planifier l\'intervention' }}
             </button>
+           
+            {# ── Modal ajout matériel ── #}
+            <div id="modal-materiel-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000; align-items:center; justify-content:center;">
+                <div style="background:white; border-radius:16px; padding:24px; width:400px; max-width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2);">
+                    <h3 style="margin-bottom:16px; font-size:1rem;">Ajouter un matériel</h3>
 
+                    <div class="form-group">
+                        <label>Matériel</label>
+                        <select id="modal-select-materiel" class="form-control">
+                            <option value="">— Choisir un matériel —</option>
+                            {% for materiel in materiels_disponibles %}
+                                <option value="{{ materiel.id }}"
+                                        data-nom="{{ materiel.nom }}"
+                                        data-stock="{{ materiel.quantiteStock }}">
+                                    {{ materiel.nom }} ({{ materiel.quantiteStock }} en stock)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quantité</label>
+                        <input type="number" id="modal-quantite-materiel" min="1" value="1">
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button type="button" id="confirmer-materiel" class="btn btn-primary" style="flex:1;">
+                            Ajouter
+                        </button>
+                        <button type="button" onclick="fermerModalMateriel()" class="btn btn-secondary" style="flex:1;">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            </div>
             {{ form_end(affectationForm) }}
         </div>
         {% endif %}
@@ -200,7 +286,100 @@
                 calendarInstance.refetchEvents();
             });
         }
+
+        // ── Gestion matériel via modal ──
+        const materielList = document.getElementById('materiel-list');
+        const materielAffichage = document.getElementById('materiel-affichage');
+        const btnOuvrir = document.getElementById('ouvrir-modal-materiel');
+        const modalOverlay = document.getElementById('modal-materiel-overlay');
+        const selectModal = document.getElementById('modal-select-materiel');
+        const quantiteModal = document.getElementById('modal-quantite-materiel');
+        const btnConfirmer = document.getElementById('confirmer-materiel');
+
+        let index = materielList.children.length;
+        // Attache les listeners de suppression aux matériels déjà existants (rendus côté serveur)
+        document.querySelectorAll('#materiel-affichage .materiel-item').forEach(item => {
+            const materielId = item.dataset.materielId;
+            const hiddenDiv = document.querySelector(`#materiel-list .materiel-row-hidden[data-materiel-id="${materielId}"]`);
+            item.querySelector('.retirer-materiel').addEventListener('click', function () {
+                if (hiddenDiv) hiddenDiv.remove();
+                item.remove();
+            });
+        });
+        const materielsAjoutes = []; // {id, nom, quantite, elementIndex}
+
+        if (btnOuvrir) {
+            btnOuvrir.addEventListener('click', function () {
+                selectModal.value = '';
+                quantiteModal.value = 1;
+                modalOverlay.style.display = 'flex';
+            });
+        }
+
+        modalOverlay.addEventListener('click', function (e) {
+            if (e.target === this) fermerModalMateriel();
+        });
+
+        btnConfirmer.addEventListener('click', function () {
+            const materielId = selectModal.value;
+            const quantite = parseInt(quantiteModal.value);
+
+            if (!materielId || !quantite || quantite < 1) {
+                alert('Veuillez choisir un matériel et une quantité valide.');
+                return;
+            }
+
+            const option = selectModal.options[selectModal.selectedIndex];
+            const nom = option.dataset.nom;
+            const stock = parseInt(option.dataset.stock);
+
+            if (quantite > stock) {
+                alert(`Stock insuffisant : ${stock} disponible(s) pour ${nom}.`);
+                return;
+            }
+
+            ajouterMateriel(materielId, nom, quantite);
+            fermerModalMateriel();
+        });
+
+        function ajouterMateriel(materielId, nom, quantite) {
+            // Champ caché pour le formulaire Symfony
+            const prototype = materielList.dataset.prototype;
+            const newForm = prototype.replace(/__name__/g, index);
+
+            const hiddenDiv = document.createElement('div');
+            hiddenDiv.className = 'materiel-row-hidden';
+            hiddenDiv.dataset.index = index;
+            hiddenDiv.innerHTML = newForm;
+            materielList.appendChild(hiddenDiv);
+
+            // Pré-remplir les valeurs dans les champs cachés
+            const selectHidden = hiddenDiv.querySelector('select');
+            const quantiteHidden = hiddenDiv.querySelector('input[type="number"], input[type="text"]');
+            if (selectHidden) selectHidden.value = materielId;
+            if (quantiteHidden) quantiteHidden.value = quantite;
+
+            // Affichage lisible
+            const item = document.createElement('div');
+            item.className = 'materiel-item';
+            item.dataset.index = index;
+            item.innerHTML = `
+                <span>${nom} × ${quantite}</span>
+                <button type="button" class="retirer-materiel">✕</button>
+            `;
+            item.querySelector('.retirer-materiel').addEventListener('click', function () {
+                hiddenDiv.remove();
+                item.remove();
+            });
+            materielAffichage.appendChild(item);
+
+            index++;
+        }
     });
+
+    function fermerModalMateriel() {
+        document.getElementById('modal-materiel-overlay').style.display = 'none';
+    }
 
     function initialiserCalendrier(technicienId) {
         const calendarEl = document.getElementById('mini-calendar');

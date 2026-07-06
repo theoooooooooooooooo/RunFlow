@@ -16,11 +16,11 @@ class MaterielIntervention
     #[ORM\Column]
     private ?int $quantite = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'materielInterventions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Intervention $intervention = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'materielInterventions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Materiel $materiel = null;
 

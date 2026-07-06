@@ -392,3 +392,36 @@ a { text-decoration: none; color: inherit; }
     background: white;
     cursor: pointer;
 }
+
+/* ─── Matériel scrollable ─── */
+.materiel-scroll-list {
+    max-height: 160px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px;
+    margin-top: 8px;
+}
+
+.materiel-row-hidden { display: none; }
+
+.materiel-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: #f9fafb;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: .85rem;
+}
+
+.materiel-item:last-child { margin-bottom: 0; }
+
+.materiel-item .retirer-materiel {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-weight: bold;
+}

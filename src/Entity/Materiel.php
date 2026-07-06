@@ -26,14 +26,14 @@ class Materiel
     private ?int $quantite_stock = null;
 
     /**
-     * @var Collection<int, Intervention>
+     * @var Collection<int, MaterielIntervention>
      */
-    #[ORM\ManyToMany(targetEntity: Intervention::class, mappedBy: 'materiels')]
-    private Collection $interventions;
+    #[ORM\OneToMany(targetEntity: MaterielIntervention::class, mappedBy: 'materiel')]
+    private Collection $materielInterventions;
 
     public function __construct()
     {
-        $this->interventions = new ArrayCollection();
+        $this->materielInterventions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -77,30 +77,8 @@ class Materiel
         return $this;
     }
 
-    /**
-     * @return Collection<int, Intervention>
-     */
-    public function getInterventions(): Collection
+    public function getMaterielInterventions(): Collection
     {
-        return $this->interventions;
-    }
-
-    public function addIntervention(Intervention $intervention): static
-    {
-        if (!$this->interventions->contains($intervention)) {
-            $this->interventions->add($intervention);
-            $intervention->addMateriel($this);
-        }
-
-        return $this;
-    }
-
-    public function removeIntervention(Intervention $intervention): static
-    {
-        if ($this->interventions->removeElement($intervention)) {
-            $intervention->removeMateriel($this);
-        }
-
-        return $this;
+        return $this->materielInterventions;
     }
 }

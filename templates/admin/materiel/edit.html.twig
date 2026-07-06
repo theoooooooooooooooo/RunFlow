@@ -1,13 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier l'intervention #{{ intervention.id }} — Runflow{% endblock %}
-{% block page_title %}Modifier l'intervention #{{ intervention.id }}{% endblock %}
+{% block title %}Modifier {{ materiel.nom }} — Runflow{% endblock %}
+{% block page_title %}Modifier le matériel{% endblock %}
 
 {% block body %}
 
 <div class="dashboard-section" style="max-width: 600px;">
-
     {{ form_start(form) }}
+
+    <div class="form-group">
+        {{ form_label(form.nom) }}
+        {{ form_widget(form.nom) }}
+        {{ form_errors(form.nom) }}
+    </div>
 
     <div class="form-group">
         {{ form_label(form.description) }}
@@ -16,15 +21,14 @@
     </div>
 
     <div class="form-group">
-        {{ form_label(form.statut) }}
-        {{ form_widget(form.statut) }}
-        {{ form_errors(form.statut) }}
+        {{ form_label(form.quantite_stock) }}
+        {{ form_widget(form.quantite_stock) }}
+        {{ form_errors(form.quantite_stock) }}
     </div>
 
     <div style="display: flex; gap: 12px; margin-top: 24px;">
         <button type="submit" class="btn btn-primary">Enregistrer</button>
-        <a href="{{ path('app_admin_intervention_show', {id: intervention.id}) }}"
-           class="btn btn-secondary">Annuler</a>
+        <a href="{{ path('app_admin_materiel_index') }}" class="btn btn-secondary">Annuler</a>
     </div>
 
     {{ form_end(form) }}

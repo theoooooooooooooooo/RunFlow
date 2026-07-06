@@ -7,6 +7,7 @@ use App\Entity\Utilisateur;
 use App\Repository\UtilisateurRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -34,23 +35,31 @@ class AffectationTechnicienType extends AbstractType
             ->add('duree_estimee', ChoiceType::class, [
                 'label'   => 'Durée estimée',
                 'choices' => [
-                    '30 minutes'  => 30,
-                    '1 heure'     => 60,
-                    '1h30'        => 90,
-                    '2 heures'    => 120,
-                    '3 heures'    => 180,
-                    '4 heures'    => 240,
-                    'Demi-journée (4h)' => 240,
+                    '30 minutes' => 30,
+                    '1 heure'    => 60,
+                    '1h30'       => 90,
+                    '2 heures'   => 120,
+                    '3 heures'   => 180,
+                    '4 heures'   => 240,
                     'Journée complète (8h)' => 480,
                 ],
-                'data'    => 120, // valeur par défaut
+                'data'        => 120,
                 'constraints' => [new NotBlank(message: 'Veuillez estimer une durée.')],
             ])
             ->add('date_planifiee', DateTimeType::class, [
-                'label'        => 'Date planifiée',
-                'widget'       => 'single_text',
-                'input'        => 'datetime_immutable',
-                'constraints'  => [new NotBlank(message: 'Veuillez sélectionner un créneau sur le calendrier.')],
+                'label'       => 'Date planifiée',
+                'widget'      => 'single_text',
+                'input'       => 'datetime_immutable',
+                'constraints' => [new NotBlank(message: 'Veuillez sélectionner un créneau sur le calendrier.')],
+            ])
+            ->add('materielInterventions', CollectionType::class, [
+                'label'         => false,
+                'entry_type'    => MaterielInterventionType::class,
+                'allow_add'     => true,
+                'allow_delete'  => true,
+                'by_reference'  => false,
+                'required'      => false,
+                'prototype'     => true,
             ])
         ;
     }

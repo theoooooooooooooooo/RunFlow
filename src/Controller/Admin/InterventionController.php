@@ -5,9 +5,10 @@ namespace App\Controller\Admin;
 use App\Entity\Intervention;
 use App\Entity\Utilisateur;
 use App\Enum\StatutInterventionEnum;
-use App\Form\InterventionAdminType;
 use App\Form\AffectationTechnicienType;
+use App\Form\InterventionAdminType;
 use App\Repository\InterventionRepository;
+use App\Repository\MaterielRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,22 +48,63 @@ final class InterventionController extends AbstractController
     public function show(
         Intervention $intervention,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        MaterielRepository $materielRepo
     ): Response {
+        // Capture l'état du matériel AVANT modification (pour restituer le stock)
+        $ancienMateriel = [];
+        foreach ($intervention->getMaterielInterventions() as $mi) {
+            $materielId = $mi->getMateriel()->getId();
+            if (!isset($ancienMateriel[$materielId])) {
+                $ancienMateriel[$materielId] = ['materiel' => $mi->getMateriel(), 'quantite' => 0];
+            }
+            $ancienMateriel[$materielId]['quantite'] += $mi->getQuantite();
+        }
+
+        $dejaPlanifiee = $intervention->getStatut() === StatutInterventionEnum::PLANIFIEE;
+
         $affectationForm = $this->createForm(AffectationTechnicienType::class, $intervention);
         $affectationForm->handleRequest($request);
 
         if ($affectationForm->isSubmitted() && $affectationForm->isValid()) {
+
+            // Restitue l'ancien stock avant de recalculer
+            foreach ($ancienMateriel as $data) {
+                $data['materiel']->setQuantiteStock($data['materiel']->getQuantiteStock() + $data['quantite']);
+            }
+
+            // Vérifie le nouveau stock disponible
+            foreach ($intervention->getMaterielInterventions() as $mi) {
+                if ($mi->getQuantite() > $mi->getMateriel()->getQuantiteStock()) {
+                    $this->addFlash('error', sprintf(
+                        'Stock insuffisant pour "%s" (demandé : %d, disponible : %d).',
+                        $mi->getMateriel()->getNom(),
+                        $mi->getQuantite(),
+                        $mi->getMateriel()->getQuantiteStock()
+                    ));
+                    return $this->redirectToRoute('app_admin_intervention_show', ['id' => $intervention->getId()]);
+                }
+            }
+
+            // Déduit le nouveau stock
+            foreach ($intervention->getMaterielInterventions() as $mi) {
+                $mi->getMateriel()->setQuantiteStock($mi->getMateriel()->getQuantiteStock() - $mi->getQuantite());
+            }
+
             $intervention->setStatut(StatutInterventionEnum::PLANIFIEE);
             $em->flush();
 
-            $this->addFlash('success', 'Technicien affecté et intervention planifiée.');
+            $this->addFlash('success', $dejaPlanifiee
+                ? 'Affectation mise à jour avec succès.'
+                : 'Technicien affecté et intervention planifiée.'
+            );
             return $this->redirectToRoute('app_admin_intervention_show', ['id' => $intervention->getId()]);
         }
 
         return $this->render('admin/intervention/show.html.twig', [
-            'intervention'    => $intervention,
-            'affectationForm' => $affectationForm,
+            'intervention'          => $intervention,
+            'affectationForm'       => $affectationForm,
+            'materiels_disponibles' => $materielRepo->findAll(),
         ]);
     }
 

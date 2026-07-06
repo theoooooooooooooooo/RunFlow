@@ -47,17 +47,17 @@ class Intervention
     private ?Adresse $adresse = null;
 
     /**
-     * @var Collection<int, Materiel>
+     * @var Collection<int, MaterielIntervention>
      */
-    #[ORM\ManyToMany(targetEntity: Materiel::class, inversedBy: 'interventions')]
-    private Collection $materiels;
+    #[ORM\OneToMany(targetEntity: MaterielIntervention::class, mappedBy: 'intervention', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $materielInterventions;
 
     #[ORM\OneToOne(mappedBy: 'intervention', cascade: ['persist', 'remove'])]
     private ?Commentaire $commentaire = null;
 
     public function __construct()
     {
-        $this->materiels = new ArrayCollection();
+        $this->materielInterventions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -186,29 +186,32 @@ class Intervention
     }
 
     /**
-     * @return Collection<int, Materiel>
+     * @return Collection<int, MaterielIntervention>
      */
-    public function getMateriels(): Collection
+    public function getMaterielInterventions(): Collection
     {
-        return $this->materiels;
+        return $this->materielInterventions;
     }
 
-    public function addMateriel(Materiel $materiel): static
+    public function addMaterielIntervention(MaterielIntervention $mi): static
     {
-        if (!$this->materiels->contains($materiel)) {
-            $this->materiels->add($materiel);
+        if (!$this->materielInterventions->contains($mi)) {
+            $this->materielInterventions->add($mi);
+            $mi->setIntervention($this);
         }
-
         return $this;
     }
 
-    public function removeMateriel(Materiel $materiel): static
+    public function removeMaterielIntervention(MaterielIntervention $mi): static
     {
-        $this->materiels->removeElement($materiel);
-
+        if ($this->materielInterventions->removeElement($mi)) {
+            if ($mi->getIntervention() === $this) {
+                $mi->setIntervention(null);
+            }
+        }
         return $this;
     }
-
+    
     public function getCommentaire(): ?Commentaire
     {
         return $this->commentaire;
