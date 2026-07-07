@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Clients — Runflow{% endblock %}
+{% block page_title %}Gestion des clients{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-section">
+    {% if clients is empty %}
+        <p class="empty-state">Aucun client enregistré.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Nombre de demandes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>
+                        {% if 'ROLE_ANONYMISE' in client.roles %}
+                            <span class="text-muted"><em>Compte anonymisé</em></span>
+                        {% else %}
+                            {{ client.nomComplet }}
+                        {% endif %}
+                    </td>
+                    <td>{{ client.email }}</td>
+                    <td>{{ client.telephone }}</td>
+                    <td>{{ client.interventionsClient|length }}</td>
+                    <td>
+                        <a href="{{ path('app_admin_client_show', {id: client.id}) }}" class="btn btn-sm">
+                            Voir
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{% endblock %}

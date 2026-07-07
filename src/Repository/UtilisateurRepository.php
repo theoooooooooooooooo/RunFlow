@@ -83,4 +83,17 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Liste des clients
+     */
+    public function findClients(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.roles LIKE :role')
+            ->setParameter('role', '%ROLE_CLIENT%')
+            ->orderBy('u.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
