@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Adresse;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,17 @@ class AdresseRepository extends ServiceEntityRepository
         parent::__construct($registry, Adresse::class);
     }
 
-    //    /**
-    //     * @return Adresse[] Returns an array of Adresse objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Adresse
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Adresses déjà utilisées par ce client dans ses interventions précédentes
+     */
+    public function findByClient(Utilisateur $client): array
+    {
+        return $this->createQueryBuilder('a')
+            ->innerJoin('a.interventions', 'i')
+            ->andWhere('i.client = :client')
+            ->setParameter('client', $client)
+            ->distinct()
+            ->getQuery()
+            ->getResult();
+    }
 }

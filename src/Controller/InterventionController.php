@@ -7,6 +7,7 @@ use App\Entity\Intervention;
 use App\Entity\Utilisateur;
 use App\Enum\StatutInterventionEnum;
 use App\Form\InterventionClientType;
+use App\Repository\AdresseRepository;
 use App\Repository\InterventionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -53,22 +54,60 @@ final class InterventionController extends AbstractController
      */
     #[Route('/new', name: 'app_intervention_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CLIENT')]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    public function new(Request $request, EntityManagerInterface $em, AdresseRepository $adresseRepo): Response
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
 
         $intervention = new Intervention();
-        $form = $this->createForm(InterventionClientType::class, $intervention);
+        $form = $this->createForm(InterventionClientType::class, $intervention, ['client' => $user]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $adresse = new Adresse();
-            $adresse->setRue($form->get('adresse_rue')->getData());
-            $adresse->setVille($form->get('adresse_ville')->getData());
-            $adresse->setCodePostal($form->get('adresse_code_postal')->getData());
-            $adresse->setComplementAdresse($form->get('adresse_complement')->getData());
-            $em->persist($adresse);
+
+            $adresseExistante = $form->get('adresse_existante')->getData();
+
+            if ($adresseExistante) {
+                // Réutilisation d'une adresse déjà associée à ce client
+                $adresse = $adresseExistante;
+
+            } else {
+                // Nouvelle adresse : vérification des champs obligatoires
+                $rue          = trim((string) $form->get('adresse_rue')->getData());
+                $ville        = trim((string) $form->get('adresse_ville')->getData());
+                $codePostal   = trim((string) $form->get('adresse_code_postal')->getData());
+                $complement   = $form->get('adresse_complement')->getData();
+
+                if ($rue === '' || $ville === '' || $codePostal === '') {
+                    $this->addFlash('error', 'Veuillez sélectionner une adresse existante ou renseigner une nouvelle adresse complète.');
+                    return $this->render('intervention/new.html.twig', [
+                        'form'         => $form,
+                        'intervention' => $intervention,
+                    ]);
+                }
+
+                // Sécurité anti-doublon : réutilise une adresse identique si elle existe déjà pour ce client
+                $adresse = null;
+                foreach ($adresseRepo->findByClient($user) as $existante) {
+                    if (
+                        mb_strtolower($existante->getRue()) === mb_strtolower($rue)
+                        && mb_strtolower($existante->getVille()) === mb_strtolower($ville)
+                        && (string) $existante->getCodePostal() === $codePostal
+                    ) {
+                        $adresse = $existante;
+                        break;
+                    }
+                }
+
+                if (!$adresse) {
+                    $adresse = new Adresse();
+                    $adresse->setRue($rue);
+                    $adresse->setVille($ville);
+                    $adresse->setCodePostal((int) $codePostal);
+                    $adresse->setComplementAdresse($complement);
+                    $em->persist($adresse);
+                }
+            }
 
             $intervention->setAdresse($adresse);
             $intervention->setClient($user);
@@ -78,7 +117,7 @@ final class InterventionController extends AbstractController
             $em->persist($intervention);
             $em->flush();
 
-            $this->addFlash('success', 'Votre demande a bien été envoyée.');
+            $this->addFlash('success', 'Votre demande d\'intervention a bien été envoyée.');
             return $this->redirectToRoute('app_client_dashboard');
         }
 
