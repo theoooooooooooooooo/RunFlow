@@ -7,7 +7,12 @@
 
 <div class="dashboard-section" style="max-width: 480px; margin: 60px auto;">
 
-    <h2 style="margin-bottom: 20px; text-align: center;">Créer un compte</h2>
+    <div style="text-align: center; margin-bottom: 8px;">
+        <span style="font-size: 1.8rem; font-weight: bold; color: #2563eb;">RUNFLOW</span>
+    </div>
+    <h2 style="margin-bottom: 20px; text-align: center; font-size: 1.1rem; color: #6b7280; font-weight: 500;">
+        Créer un compte
+    </h2>
 
     {{ form_errors(registrationForm) }}
 
@@ -46,7 +51,10 @@
         <div class="form-group" style="flex-direction: row; align-items: flex-start; gap: 8px;">
             {{ form_widget(registrationForm.agreeTerms, {attr: {style: 'width:auto; margin-top:4px;'}}) }}
             <label for="{{ registrationForm.agreeTerms.vars.id }}" style="margin: 0;">
-                J'accepte les conditions générales d'utilisation et la politique de confidentialité
+                J'accepte les
+                <a href="{{ path('app_cgu') }}" target="_blank" style="color:#2563eb;">conditions générales d'utilisation</a>
+                et la
+                <a href="{{ path('app_politique_confidentialite') }}" target="_blank" style="color:#2563eb;">politique de confidentialité</a>
             </label>
         </div>
         {{ form_errors(registrationForm.agreeTerms) }}
