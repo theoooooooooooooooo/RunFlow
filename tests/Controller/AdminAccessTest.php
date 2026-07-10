@@ -48,7 +48,7 @@ class AdminAccessTest extends WebTestCase
         $em->flush();
 
         $webClient->request('GET', '/login');
-        $webClient->submitForm('Sign in', [
+        $webClient->submitForm('Se connecter', [
             'email' => $technicien->getEmail(),
             'password' => 'MotDePasse123!',
         ]);

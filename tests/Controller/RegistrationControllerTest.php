@@ -17,7 +17,7 @@ class RegistrationControllerTest extends WebTestCase
 
         $email = 'test.phpunit.' . uniqid() . '@example.com';
 
-        $client->submitForm('Register', [
+        $client->submitForm('S\'inscrire', [
             'registration_form[nom]' => 'Test',
             'registration_form[prenom]' => 'Utilisateur',
             'registration_form[email]' => $email,
@@ -54,7 +54,7 @@ class RegistrationControllerTest extends WebTestCase
         $em->flush();
 
         $client->request('GET', '/register');
-        $client->submitForm('Register', [
+        $client->submitForm('S\'inscrire', [
             'registration_form[nom]' => 'Doublon',
             'registration_form[prenom]' => 'Test',
             'registration_form[email]' => $emailExistant,
