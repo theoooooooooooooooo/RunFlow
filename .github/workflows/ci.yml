@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+      - prepod
+      - main
+  pull_request:
+    branches:
+      - dev
+      - prepod
+      - main
+
+jobs:
+  tests:
+    name: Tests et qualite du code
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: runflow
+          MYSQL_USER: runflow
+          MYSQL_PASSWORD: runflow
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Recuperation du code
+        uses: actions/checkout@v4
+
+      - name: Installation de PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_mysql, zip, intl
+          coverage: none
+
+      - name: Cache des dependances Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Installation des dependances
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Verification de la syntaxe PHP
+        run: find src tests -name "*.php" -exec php -l {} \;
+
+      - name: Verification de la syntaxe des fichiers Twig et YAML
+        run: |
+          php bin/console lint:twig templates --env=test
+          php bin/console lint:yaml config --env=test
+
+      - name: Attente de la disponibilite de MySQL
+        run: |
+          for i in {1..30}; do
+            mysqladmin ping -h 127.0.0.1 -uroot -proot --silent && break
+            sleep 2
+          done
+
+      - name: Creation de la base de donnees de test
+        env:
+          DATABASE_URL: "mysql://runflow:runflow@127.0.0.1:3306/runflow?serverVersion=8.0"
+        run: |
+          php bin/console doctrine:database:create --env=test --if-not-exists
+          php bin/console doctrine:migrations:migrate --env=test --no-interaction
+
+      - name: Execution des tests PHPUnit
+        env:
+          DATABASE_URL: "mysql://runflow:runflow@127.0.0.1:3306/runflow?serverVersion=8.0"
+        run: php bin/phpunit --testdox
