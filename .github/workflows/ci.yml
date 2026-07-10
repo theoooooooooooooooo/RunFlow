@@ -45,13 +45,14 @@ jobs:
           coverage: none
 
       - name: Creation du fichier .env pour le kernel Symfony
-        run: |
-          echo "APP_ENV=test" > .env
-          echo "APP_SECRET=ci_secret_temporaire" >> .env
-          echo "DATABASE_URL=mysql://runflow:runflow@127.0.0.1:3306/runflow?serverVersion=8.0" >> .env
-          echo "MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0" >> .env
-          echo "MAILER_DSN=null://null" >> .env
-          echo "DEFAULT_URI=http://localhost" >> .env
+              run: |
+                echo "APP_ENV=test" > .env
+                echo "APP_SECRET=ci_secret_temporaire" >> .env
+                echo "KERNEL_CLASS='App\Kernel'" >> .env
+                echo "DATABASE_URL=mysql://runflow:runflow@127.0.0.1:3306/runflow?serverVersion=8.0" >> .env
+                echo "MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0" >> .env
+                echo "MAILER_DSN=null://null" >> .env
+                echo "DEFAULT_URI=http://localhost" >> .env
 
       - name: Cache des dependances Composer
         uses: actions/cache@v4
