@@ -52,7 +52,7 @@ jobs:
           restore-keys: composer-
 
       - name: Installation des dependances
-        run: composer install --prefer-dist --no-progress --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
       - name: Verification de la syntaxe PHP
         run: find src tests -name "*.php" -exec php -l {} \;
