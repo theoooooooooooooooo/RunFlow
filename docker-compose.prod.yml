@@ -1,0 +1,52 @@
+services:
+  app:
+      build:
+        context: .
+        dockerfile: docker/php/Dockerfile.prod
+      container_name: runflow_prepod_app
+      restart: unless-stopped
+      environment:
+        APP_ENV: prod
+        APP_SECRET: ${APP_SECRET}
+        DATABASE_URL: ${DATABASE_URL}
+        MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
+        MAILER_DSN: ${MAILER_DSN}
+        DEFAULT_URI: ${DEFAULT_URI}
+      networks:
+        - web
+        - internal
+  web:
+    image: nginx:1.27-alpine
+    container_name: runflow_prepod_web
+    restart: unless-stopped
+    volumes:
+      - ./docker/nginx/prepod.conf:/etc/nginx/conf.d/default.conf
+      - .:/var/www/html:ro
+    networks:
+      - web
+      - internal
+    labels:
+      - "com.runflow.env=prepod"
+
+  database:
+    image: mysql:8.0
+    container_name: runflow_prepod_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - prepod_mysql_data:/var/lib/mysql
+    networks:
+      - internal
+
+networks:
+  web:
+    external: true
+  internal:
+    driver: bridge
+
+volumes:
+  prepod_mysql_data:

@@ -1,0 +1,31 @@
+FROM php:8.4-fpm
+
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libzip-dev \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-install pdo pdo_mysql opcache
+
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-custom.ini
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
+COPY . .
+
+RUN composer dump-autoload --optimize --no-dev \
+    && php bin/console cache:clear --env=prod --no-debug \
+    && php bin/console cache:warmup --env=prod --no-debug
+
+RUN chown -R www-data:www-data var/
+
+EXPOSE 9000
+CMD ["php-fpm"]
