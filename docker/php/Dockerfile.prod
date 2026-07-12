@@ -21,11 +21,13 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
 COPY . .
 
-RUN composer dump-autoload --optimize --no-dev \
-    && php bin/console cache:clear --env=prod --no-debug \
-    && php bin/console cache:warmup --env=prod --no-debug
+RUN composer dump-autoload --optimize --no-dev
 
 RUN chown -R www-data:www-data var/
 
+COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 9000
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php-fpm"]
