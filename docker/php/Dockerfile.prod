@@ -23,7 +23,8 @@ COPY . .
 
 RUN composer dump-autoload --optimize --no-dev
 
-RUN chown -R www-data:www-data var/
+RUN mkdir -p var/cache var/log \
+    && chown -R www-data:www-data var/
 
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
