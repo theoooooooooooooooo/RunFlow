@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ technicien.nomComplet }} — Runflow{% endblock %}
+{% block page_title %}Modifier le technicien{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-section" style="max-width: 600px;">
+
+    {{ form_start(form) }}
+
+    <div class="form-row">
+        <div class="form-group">
+            {{ form_label(form.prenom) }}
+            {{ form_widget(form.prenom) }}
+            {{ form_errors(form.prenom) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.nom) }}
+            {{ form_widget(form.nom) }}
+            {{ form_errors(form.nom) }}
+        </div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.email) }}
+        {{ form_widget(form.email) }}
+        {{ form_errors(form.email) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.telephone) }}
+        {{ form_widget(form.telephone) }}
+        {{ form_errors(form.telephone) }}
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{{ path('app_admin_technicien_index') }}" class="btn btn-secondary">Annuler</a>
+    </div>
+
+    {{ form_end(form) }}
+
+</div>
+
+{% endblock %}

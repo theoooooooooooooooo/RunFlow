@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon espace — Runflow{% endblock %}
+{% block page_title %}Mon espace{% endblock %}
+
+{% block body %}
+
+<div class="stats-grid">
+    <div class="stat-card stat-warning">
+        <div class="stat-label">En attente</div>
+        <div class="stat-number">{{ compteurs.en_attente }}</div>
+    </div>
+    <div class="stat-card stat-info">
+        <div class="stat-label">En cours</div>
+        <div class="stat-number">{{ compteurs.en_cours }}</div>
+    </div>
+    <div class="stat-card stat-success">
+        <div class="stat-label">Terminées</div>
+        <div class="stat-number">{{ compteurs.terminee }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-number">{{ total }}</div>
+    </div>
+</div>
+
+<div class="quick-actions">
+    <a href="{{ path('app_intervention_new') }}" class="btn btn-primary">
+        + Nouvelle demande d'intervention
+    </a>
+    <a href="{{ path('app_intervention_client') }}" class="btn btn-secondary">
+        Voir toutes mes demandes
+    </a>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2>Mes dernières demandes</h2>
+        {% if total > 5 %}
+            <a href="{{ path('app_intervention_client') }}" class="btn-link">
+                Voir les {{ total }} demandes →
+            </a>
+        {% endif %}
+    </div>
+
+    {% if interventions is empty %}
+        <div class="empty-state-box">
+            <p>Vous n'avez pas encore de demande d'intervention.</p>
+            <a href="{{ path('app_intervention_new') }}" class="btn btn-primary">
+                Créer ma première demande
+            </a>
+        </div>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>Adresse</th>
+                    <th>Date souhaitée</th>
+                    <th>Technicien</th>
+                    <th>Statut</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for intervention in interventions %}
+                <tr>
+                    <td>#{{ intervention.id }}</td>
+                    <td>{{ intervention.description|slice(0, 60) }}{% if intervention.description|length > 60 %}…{% endif %}</td>
+                    <td>{{ intervention.adresse }}</td>
+                    <td>{{ intervention.dateSouhaitee|date('d/m/Y') }}</td>
+                    <td>
+                        {% if intervention.technicien %}
+                            {{ intervention.technicien.nomComplet }}
+                        {% else %}
+                            <span class="text-muted">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ intervention.statut.value }}">
+                            {{ intervention.statut.label() }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ path('app_intervention_show', {id: intervention.id}) }}" class="btn btn-sm">
+                            Voir
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{% endblock %}

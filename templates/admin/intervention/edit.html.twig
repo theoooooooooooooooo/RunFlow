@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'intervention #{{ intervention.id }} — Runflow{% endblock %}
+{% block page_title %}Modifier l'intervention #{{ intervention.id }}{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-section" style="max-width: 600px;">
+
+    {{ form_start(form) }}
+
+    <div class="form-group">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description) }}
+        {{ form_errors(form.description) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.statut) }}
+        {{ form_widget(form.statut) }}
+        {{ form_errors(form.statut) }}
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{{ path('app_admin_intervention_show', {id: intervention.id}) }}"
+           class="btn btn-secondary">Annuler</a>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+
+{% endblock %}

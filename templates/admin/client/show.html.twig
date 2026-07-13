@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ client.nomComplet }} — Runflow{% endblock %}
+{% block page_title %}Fiche client{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-section" style="max-width: 700px;">
+    <h2 style="margin-bottom: 16px;">Informations</h2>
+
+    {% if 'ROLE_ANONYMISE' in client.roles %}
+        <p class="text-muted"><em>Ce compte a été anonymisé (suppression RGPD demandée par le client).</em></p>
+    {% else %}
+        <table class="table">
+            <tr><td><strong>Nom</strong></td><td>{{ client.nomComplet }}</td></tr>
+            <tr><td><strong>Email</strong></td><td>{{ client.email }}</td></tr>
+            <tr><td><strong>Téléphone</strong></td><td>{{ client.telephone }}</td></tr>
+        </table>
+    {% endif %}
+</div>
+
+<div class="dashboard-section" style="max-width: 900px;">
+    <h2 style="margin-bottom: 16px;">Historique des demandes ({{ client.interventionsClient|length }})</h2>
+
+    {% if client.interventionsClient is empty %}
+        <p class="empty-state">Aucune demande d'intervention.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th>Date demande</th>
+                    <th>Technicien</th>
+                    <th>Statut</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for intervention in client.interventionsClient %}
+                <tr>
+                    <td>#{{ intervention.id }}</td>
+                    <td>{{ intervention.description|slice(0, 50) }}{% if intervention.description|length > 50 %}…{% endif %}</td>
+                    <td>{{ intervention.dateDemande|date('d/m/Y') }}</td>
+                    <td>
+                        {% if intervention.technicien %}
+                            {{ intervention.technicien.nomComplet }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ intervention.statut.value }}">
+                            {{ intervention.statut.label() }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ path('app_admin_intervention_show', {id: intervention.id}) }}" class="btn btn-sm">
+                            Voir
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+<a href="{{ path('app_admin_client_index') }}" class="btn btn-secondary" style="margin-top: 16px; display:inline-block;">
+    ← Retour à la liste
+</a>
+
+{% endblock %}

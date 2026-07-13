@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription — Runflow{% endblock %}
+{% block page_title %}Inscription{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-section" style="max-width: 480px; margin: 60px auto;">
+
+    <div style="text-align: center; margin-bottom: 8px;">
+        <span style="font-size: 1.8rem; font-weight: bold; color: #2563eb;">RUNFLOW</span>
+    </div>
+    <h2 style="margin-bottom: 20px; text-align: center; font-size: 1.1rem; color: #6b7280; font-weight: 500;">
+        Créer un compte
+    </h2>
+
+    {{ form_errors(registrationForm) }}
+
+    {{ form_start(registrationForm) }}
+
+        <div class="form-group">
+            {{ form_label(registrationForm.prenom, 'Prénom') }}
+            {{ form_widget(registrationForm.prenom) }}
+            {{ form_errors(registrationForm.prenom) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(registrationForm.nom, 'Nom') }}
+            {{ form_widget(registrationForm.nom) }}
+            {{ form_errors(registrationForm.nom) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(registrationForm.telephone, 'Téléphone') }}
+            {{ form_widget(registrationForm.telephone) }}
+            {{ form_errors(registrationForm.telephone) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(registrationForm.email, 'Adresse e-mail') }}
+            {{ form_widget(registrationForm.email) }}
+            {{ form_errors(registrationForm.email) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(registrationForm.plainPassword, 'Mot de passe') }}
+            {{ form_widget(registrationForm.plainPassword) }}
+            {{ form_errors(registrationForm.plainPassword) }}
+        </div>
+
+        <div class="form-group" style="flex-direction: row; align-items: flex-start; gap: 8px;">
+            {{ form_widget(registrationForm.agreeTerms, {attr: {style: 'width:auto; margin-top:4px;'}}) }}
+            <label for="{{ registrationForm.agreeTerms.vars.id }}" style="margin: 0;">
+                J'accepte les
+                <a href="{{ path('app_cgu') }}" target="_blank" style="color:#2563eb;">conditions générales d'utilisation</a>
+                et la
+                <a href="{{ path('app_politique_confidentialite') }}" target="_blank" style="color:#2563eb;">politique de confidentialité</a>
+            </label>
+        </div>
+        {{ form_errors(registrationForm.agreeTerms) }}
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 12px;">
+            S'inscrire
+        </button>
+
+    {{ form_end(registrationForm) }}
+
+    <p style="text-align: center; margin-top: 16px; font-size: .9rem; color: #6b7280;">
+        Déjà un compte ?
+        <a href="{{ path('app_login') }}" style="color: #2563eb;">Se connecter</a>
+    </p>
+
+</div>
+
+{% endblock %}

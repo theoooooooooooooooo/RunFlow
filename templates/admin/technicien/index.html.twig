@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Techniciens — Runflow{% endblock %}
+{% block page_title %}Gestion des techniciens{% endblock %}
+
+{% block body %}
+
+<div class="quick-actions">
+    <a href="{{ path('app_admin_technicien_new') }}" class="btn btn-primary">
+        + Ajouter un technicien
+    </a>
+</div>
+
+<div class="dashboard-section">
+    {% if techniciens is empty %}
+        <p class="empty-state">Aucun technicien enregistré.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Statut</th>
+                    <th>Interventions en cours</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for technicien in techniciens %}
+                <tr>
+                    <td>{{ technicien.nomComplet }}</td>
+                    <td>{{ technicien.email }}</td>
+                    <td>{{ technicien.telephone }}</td>
+                    <td>
+                        {% if technicien.actif %}
+                            <span class="badge" style="background:#d1fae5; color:#065f46;">Actif</span>
+                        {% else %}
+                            <span class="badge" style="background:#fee2e2; color:#991b1b;">Désactivé</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ technicien.interventionsTechnicien|length }}</td>
+                    <td style="display:flex; gap:8px;">
+                        <a href="{{ path('app_admin_technicien_edit', {id: technicien.id}) }}" class="btn btn-sm">
+                            Modifier
+                        </a>
+                        <form method="post"
+                              action="{{ path('app_admin_technicien_toggle', {id: technicien.id}) }}"
+                              onsubmit="return confirm('{{ technicien.actif ? 'Désactiver' : 'Réactiver' }} ce technicien ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ technicien.id) }}">
+                            <button type="submit" class="btn btn-sm"
+                                    style="{% if technicien.actif %}background:#ef4444; color:white;{% else %}background:#10b981; color:white;{% endif %}">
+                                {{ technicien.actif ? 'Désactiver' : 'Réactiver' }}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{% endblock %}

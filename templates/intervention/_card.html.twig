@@ -1,0 +1,54 @@
+<div class="card">
+    <div class="card-header">
+        {# <strong>#{{ intervention.id }}</strong> #}
+        <span class="status status-{{ intervention.statut.label() }}">
+            {{ intervention.statut.label() }}
+        </span>
+    </div>
+
+    <div class="card-body">
+        <p><strong>Description :</strong> {{ intervention.description }}</p>
+
+        <p>
+            <strong>Client :</strong>
+            {{ intervention.client.nomComplet }}
+        </p>
+
+        {% if intervention.technicien %}
+            <p>
+                <strong>Technicien :</strong>
+                {{ intervention.technicien.nomComplet }}
+            </p>
+        {% else %}
+            <p><em>Aucun technicien assigné</em></p>
+        {% endif %}
+
+        <p>
+            <strong>Adresse :</strong>
+            {{ intervention.adresse.rue }}
+            {{ intervention.adresse.ville }} 
+        </p>
+
+        <p>
+            <strong>Date demandée :</strong>
+            {{ intervention.dateDemande|date('d/m/Y H:i') }}
+        </p>
+
+        <p>
+            <strong>Date souhaitée :</strong>
+            {{ intervention.dateSouhaitee|date('d/m/Y H:i') }}
+        </p>
+    </div>
+
+    <div class="card-footer">
+        <a href="{{ path('app_intervention_show', {id: intervention.id}) }}">
+            Voir
+        </a>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_intervention_edit', {id: intervention.id}) }}">
+                Modifier
+            </a>
+        {% endif %}
+    </div>
+</div>

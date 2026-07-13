@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes données personnelles — Runflow{% endblock %}
+{% block page_title %}Mes données personnelles{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-section" style="max-width: 700px;">
+
+    <p style="margin-bottom: 20px; color:#6b7280;">
+        Conformément au RGPD, voici l'ensemble des données personnelles que Runflow
+        détient à votre sujet.
+    </p>
+
+    <table class="table">
+        <tr><td><strong>Nom</strong></td><td>{{ user.nom }}</td></tr>
+        <tr><td><strong>Prénom</strong></td><td>{{ user.prenom }}</td></tr>
+        <tr><td><strong>Email</strong></td><td>{{ user.email }}</td></tr>
+        <tr><td><strong>Téléphone</strong></td><td>{{ user.telephone }}</td></tr>
+        <tr><td><strong>Rôle</strong></td><td>{{ user.roles|join(', ') }}</td></tr>
+        {% if is_granted('ROLE_CLIENT') %}
+        <tr><td><strong>Nombre de demandes d'intervention</strong></td><td>{{ user.interventionsClient|length }}</td></tr>
+        {% endif %}
+        {% if is_granted('ROLE_TECHNICIEN') %}
+        <tr><td><strong>Nombre d'interventions réalisées</strong></td><td>{{ user.interventionsTechnicien|length }}</td></tr>
+        {% endif %}
+    </table>
+
+    <div style="margin-top: 24px; padding: 16px; background:#f8fafc; border-radius: 10px; font-size: .85rem; color:#6b7280;">
+        <p><strong>Finalité du traitement :</strong> gestion de compte, traitement des demandes d'intervention, planification.</p>
+        <p style="margin-top:8px;"><strong>Durée de conservation :</strong> tant que votre compte est actif. L'historique des interventions est conservé 3 ans.</p>
+        <p style="margin-top:8px;"><strong>Vos droits :</strong> accès, rectification, effacement, limitation du traitement.</p>
+    </div>
+
+    <a href="{{ path('app_profil') }}" class="btn btn-secondary" style="margin-top: 20px; display:inline-block;">
+        ← Retour au profil
+    </a>
+
+</div>
+
+{% endblock %}

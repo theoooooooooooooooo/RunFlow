@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Politique de confidentialité — Runflow{% endblock %}
+{% block page_title %}Politique de confidentialité{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-section page-centree">
+
+    <p style="color:#6b7280; margin-bottom: 20px;">Dernière mise à jour : juillet 2026</p>
+
+    <p style="margin-bottom: 20px;">
+        Runflow accorde une attention particulière à la protection des données personnelles de ses
+        utilisateurs, conformément au Règlement Général sur la Protection des Données (RGPD).
+    </p>
+
+    <h3 style="margin-bottom: 8px;">1. Données collectées</h3>
+    <p style="margin-bottom: 12px;">Les données collectées sont limitées à ce qui est strictement nécessaire au fonctionnement du service :</p>
+    <ul style="margin: 0 0 20px 20px;">
+        <li>Nom et prénom</li>
+        <li>Adresse e-mail et numéro de téléphone</li>
+        <li>Mot de passe (stocké sous forme chiffrée, jamais en clair)</li>
+        <li>Adresse postale liée à une intervention</li>
+        <li>Données relatives aux interventions (description, dates, statut, matériel utilisé, commentaires)</li>
+    </ul>
+
+    <h3 style="margin-bottom: 8px;">2. Finalités du traitement</h3>
+    <ul style="margin: 0 0 20px 20px;">
+        <li>Création et gestion des comptes utilisateurs</li>
+        <li>Traitement et suivi des demandes d'intervention</li>
+        <li>Planification et affectation des techniciens</li>
+        <li>Gestion du matériel et du stock associés aux interventions</li>
+    </ul>
+
+    <h3 style="margin-bottom: 8px;">3. Base légale</h3>
+    <p style="margin-bottom: 20px;">
+        Le traitement des données repose sur l'exécution du service demandé par l'utilisateur
+        (fourniture d'une prestation d'intervention) ainsi que sur le consentement recueilli lors de
+        l'inscription.
+    </p>
+
+    <h3 style="margin-bottom: 8px;">4. Durée de conservation</h3>
+    <ul style="margin: 0 0 20px 20px;">
+        <li>Les données de compte sont conservées tant que le compte reste actif</li>
+        <li>L'historique des interventions est conservé 3 ans</li>
+        <li>En cas de suppression du compte, les données personnelles sont immédiatement anonymisées, l'historique des interventions étant conservé sous forme anonyme</li>
+    </ul>
+
+    <h3 style="margin-bottom: 8px;">5. Vos droits</h3>
+    <p style="margin-bottom: 12px;">Conformément au RGPD, vous disposez des droits suivants sur vos données personnelles :</p>
+    <ul style="margin: 0 0 20px 20px;">
+        <li>Droit d'accès : consulter l'ensemble des données vous concernant depuis votre espace « Mon profil »</li>
+        <li>Droit de rectification : modifier vos informations personnelles à tout moment</li>
+        <li>Droit à l'effacement : demander la suppression de votre compte, entraînant l'anonymisation immédiate de vos données personnelles</li>
+        <li>Droit à la limitation du traitement</li>
+    </ul>
+
+    <h3 style="margin-bottom: 8px;">6. Sécurité des données</h3>
+    <ul style="margin: 0 0 20px 20px;">
+        <li>Mots de passe stockés sous forme chiffrée</li>
+        <li>Authentification sécurisée par jeton</li>
+        <li>Contrôle d'accès strict selon le rôle de chaque utilisateur (client, technicien, administrateur)</li>
+        <li>Un client ne peut accéder qu'à ses propres données ; un technicien, qu'aux interventions qui lui sont assignées</li>
+    </ul>
+
+    <h3 style="margin-bottom: 8px;">7. Destinataires des données</h3>
+    <p style="margin-bottom: 20px;">
+        Les données sont accessibles uniquement au personnel habilité de l'entreprise (administrateurs
+        et techniciens concernés par une intervention donnée). Aucune donnée n'est cédée ou vendue à
+        des tiers.
+    </p>
+
+    <h3 style="margin-bottom: 8px;">8. Contact</h3>
+    <p style="margin-bottom: 20px;">
+        Pour exercer vos droits ou pour toute question relative au traitement de vos données, vous
+        pouvez consulter vos données personnelles directement depuis votre espace « Mon profil », ou
+        contacter l'administrateur de l'application.
+    </p>
+
+    <a href="{{ path('app_register') }}" class="btn btn-secondary" style="margin-top: 12px; display:inline-block;">
+        ← Retour à l'inscription
+    </a>
+
+</div>
+
+{% endblock %}

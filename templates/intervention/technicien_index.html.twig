@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes interventions — Runflow{% endblock %}
+{% block page_title %}Mes interventions{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-section">
+    {% if interventions is empty %}
+        <div class="empty-state-box">
+            <p>Aucune intervention ne vous est assignée pour le moment.</p>
+        </div>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Description</th>
+                    <th>Adresse</th>
+                    <th>Date planifiée</th>
+                    <th>Statut</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for intervention in interventions %}
+                <tr>
+                    <td>#{{ intervention.id }}</td>
+                    <td>{{ intervention.client.nomComplet }}</td>
+                    <td>{{ intervention.description|slice(0, 60) }}{% if intervention.description|length > 60 %}…{% endif %}</td>
+                    <td>{{ intervention.adresse }}</td>
+                    <td>
+                        {% if intervention.datePlanifiee %}
+                            {{ intervention.datePlanifiee|date('d/m/Y') }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ intervention.statut.value }}">
+                            {{ intervention.statut.label() }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ path('app_intervention_show', {id: intervention.id}) }}" class="btn btn-sm">
+                            Voir
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{% endblock %}
