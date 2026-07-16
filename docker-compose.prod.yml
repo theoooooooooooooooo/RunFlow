@@ -1,3 +1,4 @@
+name: runflow_prod
 services:
   app:
       build:
@@ -50,3 +51,5 @@ networks:
 
 volumes:
   prepod_mysql_data:
+    external: true
+    name: app_prepod_mysql_data
