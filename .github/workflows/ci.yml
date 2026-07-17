@@ -21,10 +21,10 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_PASSWORD: ${{ secrets.CI_MYSQL_ROOT_PASSWORD }}
           MYSQL_DATABASE: runflow
           MYSQL_USER: runflow
-          MYSQL_PASSWORD: runflow
+          MYSQL_PASSWORD: ${{ secrets.CI_MYSQL_PASSWORD }}
         ports:
           - 3306:3306
         options: >-
@@ -49,7 +49,7 @@ jobs:
           echo "APP_ENV=test" > .env
           echo "APP_SECRET=ci_secret_temporaire" >> .env
           echo "KERNEL_CLASS='App\Kernel'" >> .env
-          echo "DATABASE_URL=mysql://runflow:runflow@127.0.0.1:3306/runflow?serverVersion=8.0" >> .env
+          echo "DATABASE_URL=mysql://runflow:${{ secrets.CI_MYSQL_PASSWORD }}@127.0.0.1:3306/runflow?serverVersion=8.0" >> .env
           echo "MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0" >> .env
           echo "MAILER_DSN=null://null" >> .env
           echo "DEFAULT_URI=http://localhost" >> .env
@@ -81,18 +81,18 @@ jobs:
 
       - name: Octroi des droits sur la base de test
         run: |
-          mysql -h 127.0.0.1 -uroot -proot -e "GRANT ALL PRIVILEGES ON \`runflow_test\`.* TO 'runflow'@'%'; FLUSH PRIVILEGES;"
+          mysql -h 127.0.0.1 -uroot -p${{ secrets.CI_MYSQL_ROOT_PASSWORD }} -e "GRANT ALL PRIVILEGES ON \`runflow_test\`.* TO 'runflow'@'%'; FLUSH PRIVILEGES;"
 
       - name: Creation de la base de donnees de test
         env:
-          DATABASE_URL: "mysql://runflow:runflow@127.0.0.1:3306/runflow?serverVersion=8.0"
+          DATABASE_URL: "mysql://runflow:${{ secrets.CI_MYSQL_PASSWORD }}@127.0.0.1:3306/runflow?serverVersion=8.0"
         run: |
           php bin/console doctrine:database:create --env=test --if-not-exists
           php bin/console doctrine:migrations:migrate --env=test --no-interaction
 
       - name: Execution des tests PHPUnit
         env:
-          DATABASE_URL: "mysql://runflow:runflow@127.0.0.1:3306/runflow?serverVersion=8.0"
+          DATABASE_URL: "mysql://runflow:${{ secrets.CI_MYSQL_PASSWORD }}@127.0.0.1:3306/runflow?serverVersion=8.0"
         run: php bin/phpunit --testdox
 
   deploy:
