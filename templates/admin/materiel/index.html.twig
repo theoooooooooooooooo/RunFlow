@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Matériel — Runflow{% endblock %}
+{% block page_title %}Gestion du matériel{% endblock %}
+
+{% block body %}
+
+<div class="quick-actions">
+    <a href="{{ path('app_admin_materiel_new') }}" class="btn btn-primary">
+        + Ajouter un matériel
+    </a>
+</div>
+
+<div class="dashboard-section">
+    {% if materiels is empty %}
+        <p class="empty-state">Aucun matériel enregistré.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Quantité en stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for materiel in materiels %}
+                <tr>
+                    <td>{{ materiel.nom }}</td>
+                    <td>{{ materiel.description|default('—')|slice(0, 60) }}</td>
+                    <td>
+                        {% if materiel.quantiteStock <= seuil_critique %}
+                            <span class="badge badge-danger">{{ materiel.quantiteStock }} — critique</span>
+                        {% else %}
+                            <span class="badge" style="background:#d1fae5; color:#065f46;">{{ materiel.quantiteStock }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="display:flex; gap:8px;">
+                        <a href="{{ path('app_admin_materiel_edit', {id: materiel.id}) }}" class="btn btn-sm">
+                            Modifier
+                        </a>
+                        <form method="post"
+                              action="{{ path('app_admin_materiel_delete', {id: materiel.id}) }}"
+                              onsubmit="return confirm('Supprimer ce matériel ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ materiel.id) }}">
+                            <button type="submit" class="btn btn-sm" style="background:#ef4444; color:white;">
+                                Supprimer
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{% endblock %}

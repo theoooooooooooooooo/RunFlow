@@ -1,0 +1,477 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Intervention #{{ intervention.id }} — Runflow{% endblock %}
+{% block page_title %}Intervention #{{ intervention.id }}{% endblock %}
+
+{% block body %}
+
+<div style="display: flex; gap: 24px; align-items: flex-start;">
+
+    {# ── Détail ── #}
+    <div style="flex: 1;">
+
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2>Informations</h2>
+                <span class="badge badge-{{ intervention.statut.value }}">
+                    {{ intervention.statut.label() }}
+                </span>
+            </div>
+
+            <table class="table">
+                <tr>
+                    <td><strong>Client</strong></td>
+                    <td>{{ intervention.client.nomComplet }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Téléphone</strong></td>
+                    <td>{{ intervention.client.telephone }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Description</strong></td>
+                    <td>{{ intervention.description }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Adresse</strong></td>
+                    <td>{{ intervention.adresse }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Date de demande</strong></td>
+                    <td>{{ intervention.dateDemande|date('d/m/Y') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Date souhaitée</strong></td>
+                    <td>{{ intervention.dateSouhaitee|date('d/m/Y H:i') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Date planifiée</strong></td>
+                    <td>
+                        {% if intervention.datePlanifiee %}
+                            {{ intervention.datePlanifiee|date('d/m/Y H:i') }}
+                        {% else %}
+                            <span class="text-muted">Non planifiée</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Technicien</strong></td>
+                    <td>
+                        {% if intervention.technicien %}
+                            {{ intervention.technicien.nomComplet }}
+                        {% else %}
+                            <span class="text-muted">Non assigné</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        {# ── Commentaire ── #}
+        {% if intervention.commentaire %}
+        <div class="dashboard-section">
+            <h2 style="margin-bottom: 12px;">Commentaire du technicien</h2>
+            <p>{{ intervention.commentaire.contenu }}</p>
+            <small class="text-muted">{{ intervention.commentaire.date|date('d/m/Y') }}</small>
+        </div>
+        {% endif %}
+        {# ── Matériel utilisé ── #}
+        {% if intervention.materielInterventions is not empty %}
+        <div class="dashboard-section">
+            <h2 style="margin-bottom: 12px;">Matériel prévu pour l'intervention</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Matériel</th>
+                        <th>Quantité</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mi in intervention.materielInterventions %}
+                    <tr>
+                        <td>{{ mi.materiel.nom }}</td>
+                        <td>{{ mi.quantite }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── Actions ── #}
+    <div style="width: 700px; display: flex; flex-direction: column; gap: 16px;">
+
+        {# Accepter / Refuser si EN_ATTENTE #}
+        {% if intervention.statut.value == 'en_attente' %}
+        <div class="dashboard-section">
+            <h3 style="margin-bottom: 16px; font-size: 1rem;">Traiter la demande</h3>
+
+            <form method="post"
+                  action="{{ path('app_admin_intervention_accepter', {id: intervention.id}) }}">
+                <input type="hidden" name="_token"
+                       value="{{ csrf_token('accepter' ~ intervention.id) }}">
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 10px;">
+                    ✓ Accepter la demande
+                </button>
+            </form>
+
+            <form method="post"
+                  action="{{ path('app_admin_intervention_refuser', {id: intervention.id}) }}"
+                  onsubmit="return confirm('Confirmer le refus de cette demande ?')">
+                <input type="hidden" name="_token"
+                       value="{{ csrf_token('refuser' ~ intervention.id) }}">
+                <button type="submit" class="btn" style="width: 100%; background: #ef4444; color:white;">
+                    ✗ Refuser la demande
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        {# Affectation technicien si ACCEPTEE ou déjà PLANIFIEE (modification) #}
+        {% if intervention.statut.value in ['acceptee', 'planifiee'] %}
+        <div class="dashboard-section">
+            <h3 style="margin-bottom: 16px; font-size: 1rem;">
+                {{ intervention.statut.value == 'planifiee' ? 'Modifier l\'affectation' : 'Affecter un technicien' }}
+            </h3>
+
+            {{ form_start(affectationForm) }}
+
+            <div class="form-group">
+                {{ form_label(affectationForm.technicien) }}
+                {{ form_widget(affectationForm.technicien) }}
+                {{ form_errors(affectationForm.technicien) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(affectationForm.duree_estimee) }}
+                {{ form_widget(affectationForm.duree_estimee) }}
+                {{ form_errors(affectationForm.duree_estimee) }}
+            </div>
+
+            {# Créneau sélectionné affiché #}
+            <div id="creneau-selectionne" style="display:none; margin-bottom: 12px;">
+                <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 10px 14px; font-size: .9rem;">
+                    📅 <strong id="creneau-label"></strong>
+                    <button type="button" onclick="reinitialiserCreneau()"
+                            style="float:right; background:none; border:none; color:#ef4444; cursor:pointer;">✕</button>
+                </div>
+            </div>
+
+            {# Champ caché rempli par FullCalendar #}
+            {{ form_widget(affectationForm.date_planifiee, {attr: {style: 'display:none'}}) }}
+            <div class="form-group">
+                <label>Matériel nécessaire</label>
+
+                <div id="materiel-list" class="materiel-scroll-list"
+                    data-prototype="{{ form_widget(affectationForm.materielInterventions.vars.prototype)|e('html_attr') }}">
+                    {% for materielForm in affectationForm.materielInterventions %}
+                        <div class="materiel-row-hidden" data-materiel-id="{{ materielForm.vars.value.materiel ? materielForm.vars.value.materiel.id : '' }}">
+                            {{ form_widget(materielForm.materiel) }}
+                            {{ form_widget(materielForm.quantite) }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div id="materiel-affichage" class="materiel-scroll-list">
+                    {% for materielForm in affectationForm.materielInterventions %}
+                        {% set mi = materielForm.vars.value %}
+                        {% if mi.materiel %}
+                        <div class="materiel-item" data-materiel-id="{{ mi.materiel.id }}">
+                            <span>{{ mi.materiel.nom }} × {{ mi.quantite }}</span>
+                            <button type="button" class="retirer-materiel">✕</button>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <button type="button" id="ouvrir-modal-materiel" class="btn btn-secondary btn-sm" style="margin-top: 8px;">
+                    + Ajouter un matériel
+                </button>
+            </div>
+            {# Mini calendrier FullCalendar #}
+            <div id="mini-calendar" style="margin-bottom: 16px; font-size: .82rem;"></div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-planifier"
+                    {{ intervention.statut.value == 'acceptee' ? 'disabled' : '' }}>
+                {{ intervention.statut.value == 'planifiee' ? '💾 Enregistrer les modifications' : '📅 Planifier l\'intervention' }}
+            </button>
+           
+            {# ── Modal ajout matériel ── #}
+            <div id="modal-materiel-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1000; align-items:center; justify-content:center;">
+                <div style="background:white; border-radius:16px; padding:24px; width:400px; max-width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2);">
+                    <h3 style="margin-bottom:16px; font-size:1rem;">Ajouter un matériel</h3>
+
+                    <div class="form-group">
+                        <label>Matériel</label>
+                        <select id="modal-select-materiel" class="form-control">
+                            <option value="">— Choisir un matériel —</option>
+                            {% for materiel in materiels_disponibles %}
+                                <option value="{{ materiel.id }}"
+                                        data-nom="{{ materiel.nom }}"
+                                        data-stock="{{ materiel.quantiteStock }}">
+                                    {{ materiel.nom }} ({{ materiel.quantiteStock }} en stock)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quantité</label>
+                        <input type="number" id="modal-quantite-materiel" min="1" value="1">
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button type="button" id="confirmer-materiel" class="btn btn-primary" style="flex:1;">
+                            Ajouter
+                        </button>
+                        <button type="button" onclick="fermerModalMateriel()" class="btn btn-secondary" style="flex:1;">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {{ form_end(affectationForm) }}
+        </div>
+        {% endif %}
+
+        {# Modifier #}
+        <a href="{{ path('app_admin_intervention_edit', {id: intervention.id}) }}"
+           class="btn btn-secondary" style="text-align: center;">
+            ✏️ Modifier
+        </a>
+
+        {# Retour #}
+        <a href="{{ path('app_admin_intervention_index') }}"
+           class="btn btn-secondary" style="text-align: center;">
+            ← Retour à la liste
+        </a>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('vendor/fullcalendar/index.global.min.js') }}"></script>
+
+<script>
+    const apiUrl = '{{ path('app_admin_planning_creneaux') }}';
+    let calendarInstance = null;
+    let evenementTemporaire = null;
+
+
+    // Locale française définie manuellement (évite la dépendance CDN)
+    const localeFr = {
+        code: 'fr',
+        week: { dow: 1, doy: 4 },
+        buttonText: {
+            prev: 'préc.', next: 'suiv.', today: "aujourd'hui",
+            month: 'mois', week: 'semaine', day: 'jour', list: 'liste',
+        },
+        weekText: 'Sem.',
+        allDayText: 'Toute la journée',
+        moreLinkText: 'en plus',
+        noEventsText: 'Aucun événement à afficher',
+        dayHeaderFormat: { weekday: 'long' },
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectTechnicien = document.getElementById('affectation_technicien_technicien');
+
+        if (selectTechnicien) {
+            initialiserCalendrier(selectTechnicien.value);
+
+            selectTechnicien.addEventListener('change', function () {
+                reinitialiserCreneau();
+                calendarInstance.refetchEvents();
+            });
+        }
+
+        // ── Gestion matériel via modal ──
+        const materielList = document.getElementById('materiel-list');
+        const materielAffichage = document.getElementById('materiel-affichage');
+        const btnOuvrir = document.getElementById('ouvrir-modal-materiel');
+        const modalOverlay = document.getElementById('modal-materiel-overlay');
+        const selectModal = document.getElementById('modal-select-materiel');
+        const quantiteModal = document.getElementById('modal-quantite-materiel');
+        const btnConfirmer = document.getElementById('confirmer-materiel');
+
+        let index = materielList.children.length;
+        // Attache les listeners de suppression aux matériels déjà existants (rendus côté serveur)
+        document.querySelectorAll('#materiel-affichage .materiel-item').forEach(item => {
+            const materielId = item.dataset.materielId;
+            const hiddenDiv = document.querySelector(`#materiel-list .materiel-row-hidden[data-materiel-id="${materielId}"]`);
+            item.querySelector('.retirer-materiel').addEventListener('click', function () {
+                if (hiddenDiv) hiddenDiv.remove();
+                item.remove();
+            });
+        });
+        const materielsAjoutes = []; // {id, nom, quantite, elementIndex}
+
+        if (btnOuvrir) {
+            btnOuvrir.addEventListener('click', function () {
+                selectModal.value = '';
+                quantiteModal.value = 1;
+                modalOverlay.style.display = 'flex';
+            });
+        }
+
+        modalOverlay.addEventListener('click', function (e) {
+            if (e.target === this) fermerModalMateriel();
+        });
+
+        btnConfirmer.addEventListener('click', function () {
+            const materielId = selectModal.value;
+            const quantite = parseInt(quantiteModal.value);
+
+            if (!materielId || !quantite || quantite < 1) {
+                alert('Veuillez choisir un matériel et une quantité valide.');
+                return;
+            }
+
+            const option = selectModal.options[selectModal.selectedIndex];
+            const nom = option.dataset.nom;
+            const stock = parseInt(option.dataset.stock);
+
+            if (quantite > stock) {
+                alert(`Stock insuffisant : ${stock} disponible(s) pour ${nom}.`);
+                return;
+            }
+
+            ajouterMateriel(materielId, nom, quantite);
+            fermerModalMateriel();
+        });
+
+        function ajouterMateriel(materielId, nom, quantite) {
+            // Champ caché pour le formulaire Symfony
+            const prototype = materielList.dataset.prototype;
+            const newForm = prototype.replace(/__name__/g, index);
+
+            const hiddenDiv = document.createElement('div');
+            hiddenDiv.className = 'materiel-row-hidden';
+            hiddenDiv.dataset.index = index;
+            hiddenDiv.innerHTML = newForm;
+            materielList.appendChild(hiddenDiv);
+
+            // Pré-remplir les valeurs dans les champs cachés
+            const selectHidden = hiddenDiv.querySelector('select');
+            const quantiteHidden = hiddenDiv.querySelector('input[type="number"], input[type="text"]');
+            if (selectHidden) selectHidden.value = materielId;
+            if (quantiteHidden) quantiteHidden.value = quantite;
+
+            // Affichage lisible
+            const item = document.createElement('div');
+            item.className = 'materiel-item';
+            item.dataset.index = index;
+            item.innerHTML = `
+                <span>${nom} × ${quantite}</span>
+                <button type="button" class="retirer-materiel">✕</button>
+            `;
+            item.querySelector('.retirer-materiel').addEventListener('click', function () {
+                hiddenDiv.remove();
+                item.remove();
+            });
+            materielAffichage.appendChild(item);
+
+            index++;
+        }
+    });
+
+    function fermerModalMateriel() {
+        document.getElementById('modal-materiel-overlay').style.display = 'none';
+    }
+
+    function initialiserCalendrier(technicienId) {
+        const calendarEl = document.getElementById('mini-calendar');
+        if (!calendarEl) return;
+
+        calendarInstance = new FullCalendar.Calendar(calendarEl, {
+            locales: [localeFr],
+            locale: 'fr',
+            initialView: 'timeGridWeek',
+            headerToolbar: {
+                left:   'prev,next',
+                center: 'title',
+                right:  'today'
+            },
+            height: 400,
+            slotMinTime: '07:00:00',
+            slotMaxTime: '20:00:00',
+            allDaySlot: false,
+            nowIndicator: true,
+            selectable: true,
+            selectMirror: true,
+            businessHours: {
+                daysOfWeek: [1, 2, 3, 4, 5],
+                startTime: '08:00',
+                endTime: '18:00',
+            },
+            events: function (info, successCallback, failureCallback) {
+                const tid = document.getElementById('affectation_technicien_technicien')?.value;
+                const url = tid ? `${apiUrl}?technicien_id=${tid}` : apiUrl;
+
+                fetch(url)
+                    .then(r => r.json())
+                    .then(data => successCallback(data))
+                    .catch(() => failureCallback());
+            },
+            eventClick: function (info) {
+                alert('Ce créneau est déjà occupé par ' + (info.event.extendedProps.technicien ?? 'un technicien'));
+            },
+
+            select: function (info) {
+                const debut = info.start;
+                const dureeSelect = document.getElementById('affectation_technicien_duree_estimee');
+                const dureeMinutes = dureeSelect ? parseInt(dureeSelect.value) : 120;
+
+                const fin = new Date(debut.getTime() + dureeMinutes * 60000);
+
+                const label = debut.toLocaleString('fr-FR', {
+                    weekday: 'long', day: '2-digit', month: 'long',
+                    year: 'numeric', hour: '2-digit', minute: '2-digit',
+                });
+
+                const input = document.getElementById('affectation_technicien_date_planifiee');
+                if (input) {
+                    input.value = formatDateTimeLocal(debut);
+                }
+
+                document.getElementById('creneau-label').textContent = label;
+                document.getElementById('creneau-selectionne').style.display = 'block';
+                document.getElementById('btn-planifier').disabled = false;
+
+                if (evenementTemporaire) {
+                    evenementTemporaire.remove();
+                }
+
+                evenementTemporaire = calendarInstance.addEvent({
+                    title: '✓ Créneau choisi',
+                    start: debut,
+                    end: fin,
+                    backgroundColor: '#2563eb',
+                    borderColor: '#1d4ed8',
+                    textColor: '#fff',
+                });
+            },
+        });
+
+        calendarInstance.render();
+    }
+
+    function reinitialiserCreneau() {
+        document.getElementById('affectation_technicien_date_planifiee').value = '';
+        document.getElementById('creneau-selectionne').style.display = 'none';
+        document.getElementById('btn-planifier').disabled = true;
+
+        if (evenementTemporaire) {
+            evenementTemporaire.remove();
+            evenementTemporaire = null;
+        }
+    }
+
+    function formatDateTimeLocal(date) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+</script>
+{% endblock %}

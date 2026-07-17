@@ -1,0 +1,198 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Administration — Runflow{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block body %}
+
+<div class="stats-grid">
+    <div class="stat-card stat-warning">
+        <div class="stat-label">En attente</div>
+        <div class="stat-number">{{ nb_en_attente }}</div>
+    </div>
+    <div class="stat-card stat-info">
+        <div class="stat-label">Techniciens</div>
+        <div class="stat-number">{{ nb_techniciens }}</div>
+    </div>
+    <div class="stat-card stat-success">
+        <div class="stat-label">Clients</div>
+        <div class="stat-number">{{ nb_clients }}</div>
+    </div>
+    <div class="stat-card {% if nb_stock_critique > 0 %}stat-danger{% else %}stat-success{% endif %}">
+        <div class="stat-label">Stock critique</div>
+        <div class="stat-number">{{ nb_stock_critique }}</div>
+    </div>
+</div>
+
+{# ── Comptes anonymisés récemment (RGPD) ── #}
+{% if comptes_anonymises is not empty %}
+<div class="dashboard-section section-alert">
+    <div class="section-header">
+        <h2>🔔 Suppressions de compte récentes</h2>
+    </div>
+    <p style="font-size:.85rem; color:#6b7280; margin-bottom:12px;">
+        Ces clients ont supprimé leur compte (RGPD). Vérifiez qu'aucune intervention
+        en cours ne nécessite un suivi avec eux.
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Compte</th>
+                <th>Date de suppression</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for compte in comptes_anonymises %}
+            <tr>
+                <td>#{{ compte.id }} <span class="text-muted">(anonymisé)</span></td>
+                <td>{{ compte.dateAnonymisation|date('d/m/Y H:i') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{# ── Demandes en attente ── #}
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2>Demandes en attente</h2>
+        <a href="{{ path('app_admin_intervention_index') }}" class="btn-link">Voir tout →</a>
+    </div>
+
+    {% if en_attente is empty %}
+        <p class="empty-state">Aucune demande en attente.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Description</th>
+                    <th>Adresse</th>
+                    <th>Date souhaitée</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for intervention in en_attente %}
+                <tr>
+                    <td>#{{ intervention.id }}</td>
+                    <td>{{ intervention.client.nomComplet }}</td>
+                    <td>{{ intervention.description|slice(0, 60) }}{% if intervention.description|length > 60 %}…{% endif %}</td>
+                    <td>{{ intervention.adresse }}</td>
+                    <td>{{ intervention.dateSouhaitee|date('d/m/Y') }}</td>
+                    <td>
+                        <a href="{{ path('app_admin_intervention_show', {id: intervention.id}) }}" class="btn btn-sm btn-primary">
+                            Traiter
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{# ── Activité récente ── #}
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2>Activité récente</h2>
+        <a href="{{ path('app_admin_intervention_index') }}" class="btn-link">Voir tout →</a>
+    </div>
+
+    {% if dernieres is empty %}
+        <p class="empty-state">Aucune intervention enregistrée.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Technicien</th>
+                    <th>Adresse</th>
+                    <th>Date demande</th>
+                    <th>Statut</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for intervention in dernieres %}
+                <tr>
+                    <td>#{{ intervention.id }}</td>
+                    <td>{{ intervention.client.nomComplet }}</td>
+                    <td>
+                        {% if intervention.technicien %}
+                            {{ intervention.technicien.nomComplet }}
+                        {% else %}
+                            <span class="text-muted">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ intervention.adresse }}</td>
+                    <td>{{ intervention.dateDemande|date('d/m/Y') }}</td>
+                    <td>
+                        <span class="badge badge-{{ intervention.statut.value }}">
+                            {{ intervention.statut.label() }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ path('app_admin_intervention_show', {id: intervention.id}) }}" class="btn btn-sm">
+                            Voir
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+
+{# ── Stock critique ── #}
+{% if stock_critique is not empty %}
+<div class="dashboard-section section-alert">
+    <div class="section-header">
+        <h2>⚠ Stock critique</h2>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Matériel</th>
+                <th>Quantité restante</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for materiel in stock_critique %}
+            <tr>
+                <td>{{ materiel.nom }}</td>
+                <td><span class="badge badge-danger">{{ materiel.quantiteStock }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{# ── Navigation rapide ── #}
+<div class="dashboard-section">
+    <h2 style="margin-bottom: 16px">Navigation rapide</h2>
+    <div class="quick-nav">
+        <a href="{{ path('app_admin_intervention_index') }}" class="nav-card">
+            <span class="nav-icon">📋</span>
+            <span>Interventions</span>
+        </a>
+        <a href="#" class="nav-card">
+            <span class="nav-icon">👥</span>
+            <span>Techniciens</span>
+        </a>
+        <a href="#" class="nav-card">
+            <span class="nav-icon">🔧</span>
+            <span>Matériel</span>
+        </a>
+        <a href="#" class="nav-card">
+            <span class="nav-icon">📅</span>
+            <span>Planning</span>
+        </a>
+    </div>
+</div>
+
+{% endblock %}

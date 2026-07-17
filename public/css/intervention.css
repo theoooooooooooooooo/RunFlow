@@ -1,0 +1,30 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.status {
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    background: #eee;
+}
+
+.status-EN_ATTENTE { background: orange; }
+.status-EN_COURS { background: blue; color: white; }
+.status-TERMINE { background: green; color: white; }
+.status-ANNULEE { background: red; color: white; }

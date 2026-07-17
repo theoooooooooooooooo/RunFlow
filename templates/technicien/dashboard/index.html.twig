@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon tableau de bord — Runflow{% endblock %}
+
+{% block body %}
+
+<div class="dashboard-header">
+    <h1>Bonjour {{ app.user.prenom }} 👷</h1>
+    <p class="subtitle">Voici vos interventions du jour.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card stat-info">
+        <div class="stat-number">{{ nb_actives }}</div>
+        <div class="stat-label">Intervention(s) active(s)</div>
+    </div>
+    <div class="stat-card stat-success">
+        <div class="stat-number">{{ nb_terminees }}</div>
+        <div class="stat-label">Terminée(s)</div>
+    </div>
+    {% if prochaine %}
+    <div class="stat-card stat-warning" style="grid-column: span 2">
+        <div class="stat-label">Prochaine intervention</div>
+        <div class="stat-number" style="font-size:1.2rem">
+            {{ prochaine.datePlanifiee|date('d/m/Y à H:i') }}
+            — {{ prochaine.adresse }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<section class="dashboard-section">
+    <div class="section-header">
+        <h2>Mes interventions en cours</h2>
+        <a href="{{ path('app_intervention_technicien') }}" class="btn-link">Voir tout →</a>
+    </div>
+
+    {% if interventions is empty %}
+        <div class="empty-state-box">
+            <p>Aucune intervention ne vous est assignée pour le moment.</p>
+        </div>
+    {% else %}
+        <div class="grid">
+            {% for intervention in interventions %}
+                <div class="card">
+                    <div class="card-header">
+                        <span class="badge badge-{{ intervention.statut.value }}">
+                            {{ intervention.statut.label() }}
+                        </span>
+                        {% if intervention.datePlanifiee %}
+                            <span class="card-date">📅 {{ intervention.datePlanifiee|date('d/m/Y') }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Client :</strong> {{ intervention.client.nomComplet }}</p>
+                        <p><strong>Adresse :</strong> {{ intervention.adresse }}</p>
+                        <p><strong>Description :</strong> {{ intervention.description|slice(0, 120) }}{% if intervention.description|length > 120 %}…{% endif %}</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ path('app_intervention_show', {id: intervention.id}) }}" class="btn btn-sm">
+                            Voir le détail
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+
+{% if historique is not empty %}
+<section class="dashboard-section">
+    <div class="section-header">
+        <h2>Interventions récemment terminées</h2>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Client</th>
+                <th>Adresse</th>
+                <th>Date planifiée</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for intervention in historique %}
+            <tr>
+                <td>#{{ intervention.id }}</td>
+                <td>{{ intervention.client.nomComplet }}</td>
+                <td>{{ intervention.adresse }}</td>
+                <td>{{ intervention.datePlanifiee ? intervention.datePlanifiee|date('d/m/Y') : '—' }}</td>
+                <td><a href="{{ path('app_intervention_show', {id: intervention.id}) }}">Voir</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+{% endblock %}
