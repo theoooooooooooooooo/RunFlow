@@ -19,15 +19,17 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
-COPY . .
+COPY --chown=www-data:www-data . .
 
 RUN composer dump-autoload --optimize --no-dev
 
 RUN mkdir -p var/cache var/log \
-    && chown -R www-data:www-data var/
+    && chown -R www-data:www-data /var/www/html
 
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+USER www-data
 
 EXPOSE 9000
 ENTRYPOINT ["docker-entrypoint.sh"]
