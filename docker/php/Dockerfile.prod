@@ -19,12 +19,19 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
-COPY --chown=www-data:www-data . .
+COPY --chown=www-data:www-data bin/ bin/
+COPY --chown=www-data:www-data config/ config/
+COPY --chown=www-data:www-data migrations/ migrations/
+COPY --chown=www-data:www-data public/ public/
+COPY --chown=www-data:www-data src/ src/
+COPY --chown=www-data:www-data templates/ templates/
+COPY --chown=www-data:www-data translations/ translations/
+COPY --chown=www-data:www-data composer.json composer.lock symfony.lock ./
 
 RUN composer dump-autoload --optimize --no-dev
 
 RUN mkdir -p var/cache var/log \
-    && chown -R www-data:www-data /var/www/html
+    && chown -R www-data:www-data var/
 
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
