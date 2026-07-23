@@ -12,6 +12,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_TECHNICIEN')]
 final class DashboardController extends AbstractController
 {
+    /**
+     * Tableau de bord technicien : interventions actives, historique et prochaine intervention
+     */
     #[Route('/technicien/dashboard', name: 'app_technicien_dashboard')]
     public function index(InterventionRepository $interventionRepo): Response
     {

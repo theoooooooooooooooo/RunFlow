@@ -13,6 +13,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_CLIENT')]
 final class DashboardController extends AbstractController
 {
+    /**
+     * Tableau de bord client : dernières demandes et compteurs par statut
+     */
     #[Route('/client', name: 'app_client_dashboard')]
     public function index(InterventionRepository $interventionRepo): Response
     {

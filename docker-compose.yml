@@ -1,3 +1,4 @@
+# Environnement de développement local : PHP + MySQL + phpMyAdmin
 services:
   php:
     build:
@@ -6,19 +7,24 @@ services:
 
     container_name: runflow_php
 
+    # Monte le code source en direct dans le conteneur (édition à chaud sans reconstruire l'image),
+    # tout en gardant var/ et vendor/ dans des volumes anonymes propres au conteneur
     volumes:
       - .:/var/www/html
-      - /var/www/html/var    
-      - /var/www/html/vendor 
+      - /var/www/html/var
+      - /var/www/html/vendor
 
     working_dir: /var/www/html
 
+    # Expose le serveur PHP intégré sur le port 8000 de la machine hôte
     ports:
       - "8000:8000"
 
+    # Attend que le conteneur database soit démarré avant de lancer PHP
     depends_on:
       - database
 
+    # Sert l'appli avec le serveur web PHP intégré, sans Nginx (suffisant en dev)
     command: php -S 0.0.0.0:8000 -t public
 
   database:
@@ -28,18 +34,22 @@ services:
 
     restart: always
 
+    # Identifiants MySQL en clair : acceptable en local, jamais en prod (voir docker-compose.prod.yml)
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: runflow
       MYSQL_USER: runflow
       MYSQL_PASSWORD: runflow
 
+    # Expose MySQL sur la machine hôte pour s'y connecter avec un client externe (DBeaver, etc.)
     ports:
       - "3306:3306"
 
+    # Persiste les données de la base entre deux redémarrages du conteneur
     volumes:
       - mysql_data:/var/lib/mysql
 
+  # Interface web d'administration MySQL, accessible en dev pour inspecter la base facilement
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
 

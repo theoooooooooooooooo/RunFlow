@@ -1,5 +1,7 @@
+# Image de base : PHP 8.4 en mode FPM (process manager utilisé derrière Nginx en production)
 FROM php:8.4-fpm
 
+# Installe les paquets système nécessaires à Composer, Git et à la compilation des extensions PHP
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -7,18 +9,27 @@ RUN apt-get update && apt-get install -y \
     zip \
     && rm -rf /var/lib/apt/lists/*
 
+# Installe les extensions PHP requises par l'appli : accès PDO/MySQL et cache opcode
 RUN docker-php-ext-install pdo pdo_mysql opcache
 
+# Configuration OPcache et configuration PHP custom (zz- = chargée après la conf par défaut)
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-custom.ini
 
+# Récupère le binaire Composer depuis l'image officielle composer, sans installer Composer soi-même
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Répertoire de travail dans le conteneur : toute la suite des COPY/RUN s'y déroule
 WORKDIR /var/www/html
 
+# Copie uniquement les manifestes Composer d'abord (permet au cache Docker de ne pas réinstaller
+# les dépendances tant que composer.json/lock n'ont pas changé)
 COPY composer.json composer.lock ./
+# Installe les dépendances de prod (sans les paquets de dev, sans scripts, sans autoloader pour l'instant)
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
+# Copie le code applicatif, dossier par dossier (liste explicite plutôt qu'un COPY . récursif,
+# pour ne jamais embarquer .env, .git ou d'autres fichiers sensibles dans l'image)
 COPY --chown=www-data:www-data bin/ bin/
 COPY --chown=www-data:www-data config/ config/
 COPY --chown=www-data:www-data migrations/ migrations/
@@ -28,16 +39,22 @@ COPY --chown=www-data:www-data templates/ templates/
 COPY --chown=www-data:www-data translations/ translations/
 COPY --chown=www-data:www-data composer.json composer.lock symfony.lock ./
 
+# Régénère l'autoloader maintenant que tout le code source est présent (mode optimisé, sans dev)
 RUN composer dump-autoload --optimize --no-dev
 
+# Crée les dossiers de cache/logs Symfony et donne la propriété à l'utilisateur non-root www-data
 RUN mkdir -p var/cache var/log \
     && chown -R www-data:www-data var/
 
+# Script exécuté au démarrage du conteneur (migrations, cache:clear, etc. avant de lancer php-fpm)
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+# Bascule sur l'utilisateur non-root www-data pour le reste de l'exécution (durcissement sécurité)
 USER www-data
 
+# Port sur lequel PHP-FPM écoute (utilisé par Nginx en amont via fastcgi_pass)
 EXPOSE 9000
+# Point d'entrée : lance le script de démarrage, qui termine par exec de la commande CMD
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php-fpm"]

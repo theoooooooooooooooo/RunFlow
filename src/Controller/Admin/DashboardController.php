@@ -13,6 +13,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class DashboardController extends AbstractController
 {
+    /**
+     * Tableau de bord admin : statistiques globales, dernières interventions, stock critique
+     */
     #[Route('/admin/dashboard', name: 'app_admin_dashboard')]
     public function index(
         InterventionRepository $interventionRepo,

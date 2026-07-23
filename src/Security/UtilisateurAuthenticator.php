@@ -16,6 +16,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
+// Gère le formulaire de connexion : vérifie les identifiants et redirige selon le rôle une fois connecté
 class UtilisateurAuthenticator extends AbstractLoginFormAuthenticator
 {
     use TargetPathTrait;
@@ -26,6 +27,9 @@ class UtilisateurAuthenticator extends AbstractLoginFormAuthenticator
     {
     }
 
+    /**
+     * Construit le "passport" à partir du formulaire soumis : email, mot de passe, token CSRF et remember-me
+     */
     public function authenticate(Request $request): Passport
     {
         $email = $request->getPayload()->getString('email');
@@ -42,6 +46,9 @@ class UtilisateurAuthenticator extends AbstractLoginFormAuthenticator
         );
     }
 
+    /**
+     * Après connexion réussie, redirige vers le tableau de bord correspondant au rôle de l'utilisateur
+     */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
       $user = $token->getUser();
@@ -63,6 +70,9 @@ class UtilisateurAuthenticator extends AbstractLoginFormAuthenticator
         );
     }
 
+    /**
+     * URL vers laquelle Symfony redirige en cas d'échec d'authentification
+     */
     protected function getLoginUrl(Request $request): string
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
