@@ -16,6 +16,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class MaterielController extends AbstractController
 {
+    /**
+     * Liste du matériel en stock, avec repérage du stock critique
+     */
     #[Route('/', name: 'app_admin_materiel_index', methods: ['GET'])]
     public function index(MaterielRepository $repository): Response
     {
@@ -25,6 +28,9 @@ final class MaterielController extends AbstractController
         ]);
     }
 
+    /**
+     * Ajouter un nouveau matériel au stock
+     */
     #[Route('/new', name: 'app_admin_materiel_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
@@ -45,6 +51,9 @@ final class MaterielController extends AbstractController
         ]);
     }
 
+    /**
+     * Modifier un matériel existant (nom, quantité en stock, etc.)
+     */
     #[Route('/{id}/edit', name: 'app_admin_materiel_edit', methods: ['GET', 'POST'])]
     public function edit(
         Materiel $materiel,
@@ -66,6 +75,9 @@ final class MaterielController extends AbstractController
         ]);
     }
 
+    /**
+     * Supprimer un matériel (refusé s'il est déjà lié à des interventions)
+     */
     #[Route('/{id}/delete', name: 'app_admin_materiel_delete', methods: ['POST'])]
     public function delete(
         Materiel $materiel,

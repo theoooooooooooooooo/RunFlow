@@ -120,6 +120,9 @@ class InterventionRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Interventions planifiées à venir (pour le calendrier admin)
+     */
     public function findPlanifiees(): array
     {
         return $this->createQueryBuilder('i')
