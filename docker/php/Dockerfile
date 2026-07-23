@@ -22,8 +22,14 @@ COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-custom.ini
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Installe la CLI Symfony (utilitaire de dev : serveur local, "symfony console", etc.)
-RUN curl -sS https://get.symfony.com/cli/installer | bash
-RUN mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+# Le script d'installation est recupere via ADD (recommande par Docker pour les ressources
+# distantes plutot qu'un curl dans un RUN), verifie non vide, puis execute et nettoye
+# en une seule instruction RUN pour limiter le nombre de couches de l'image
+ADD https://get.symfony.com/cli/installer /tmp/symfony-installer.sh
+RUN test -s /tmp/symfony-installer.sh \
+    && bash /tmp/symfony-installer.sh \
+    && rm /tmp/symfony-installer.sh \
+    && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
 
 # Répertoire de travail dans le conteneur : le code de l'appli y est monté en volume (voir docker-compose.yml)
 WORKDIR /var/www/html
