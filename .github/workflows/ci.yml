@@ -1,5 +1,6 @@
 name: CI
 
+# Déclenche le pipeline sur chaque push et chaque pull request visant Dev, prepod ou main
 on:
   push:
     branches:
@@ -13,10 +14,12 @@ on:
       - main
 
 jobs:
+  # Job 1 : lint + tests fonctionnels PHPUnit, exécutés à chaque push/PR
   tests:
     name: Tests et qualite du code
     runs-on: ubuntu-latest
 
+    # Base MySQL éphémère fournie par le runner GitHub Actions, pour les tests fonctionnels
     services:
       mysql:
         image: mysql:8.0
@@ -27,6 +30,7 @@ jobs:
           MYSQL_PASSWORD: ${{ secrets.CI_MYSQL_PASSWORD }}
         ports:
           - 3306:3306
+        # Attend que MySQL réponde avant de considérer le service "prêt"
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=10s
@@ -34,6 +38,7 @@ jobs:
           --health-retries=5
 
     steps:
+      # Clone le dépôt dans le runner (action épinglée par hash de commit, pas par tag, pour la sécurité)
       - name: Recuperation du code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -44,6 +49,8 @@ jobs:
           extensions: pdo, pdo_mysql, zip, intl
           coverage: none
 
+      # Le kernel Symfony a besoin d'un .env pour démarrer : recréé à la volée à partir des secrets CI
+      # (jamais commité), avec des valeurs neutres pour mailer/messenger en environnement de test
       - name: Creation du fichier .env pour le kernel Symfony
         env:
           CI_DB_PASSWORD: ${{ secrets.CI_MYSQL_PASSWORD }}
@@ -56,6 +63,7 @@ jobs:
           echo "MAILER_DSN=null://null" >> .env
           echo "DEFAULT_URI=http://localhost" >> .env
 
+      # Met en cache vendor/ entre les runs, invalidé automatiquement si composer.lock change
       - name: Cache des dependances Composer
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
@@ -63,17 +71,21 @@ jobs:
           key: composer-${{ hashFiles('composer.lock') }}
           restore-keys: composer-
 
+      # --no-scripts : évite d'exécuter les scripts Composer (ex: auto-scripts Symfony) non nécessaires en CI
       - name: Installation des dependances
         run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
+      # Vérifie que chaque fichier PHP est syntaxiquement valide avant d'aller plus loin
       - name: Verification de la syntaxe PHP
         run: find src tests -name "*.php" -exec php -l {} \;
 
+      # Vérifie que les templates Twig et les fichiers de config YAML sont valides
       - name: Verification de la syntaxe des fichiers Twig et YAML
         run: |
           php bin/console lint:twig templates --env=test
           php bin/console lint:yaml config --env=test
 
+      # Boucle d'attente active : le service mysql peut répondre au health-check avant d'accepter les connexions
       - name: Attente de la disponibilite de MySQL
         env:
           CI_ROOT_PASSWORD: ${{ secrets.CI_MYSQL_ROOT_PASSWORD }}
@@ -83,12 +95,14 @@ jobs:
             sleep 2
           done
 
+      # Donne à l'utilisateur applicatif runflow les droits sur la base de test dédiée
       - name: Octroi des droits sur la base de test
         env:
           CI_ROOT_PASSWORD: ${{ secrets.CI_MYSQL_ROOT_PASSWORD }}
         run: |
           mysql -h 127.0.0.1 -uroot -p"${CI_ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON \`runflow_test\`.* TO 'runflow'@'%'; FLUSH PRIVILEGES;"
 
+      # Crée la base runflow_test et applique toutes les migrations Doctrine
       - name: Creation de la base de donnees de test
         env:
           CI_DB_PASSWORD: ${{ secrets.CI_MYSQL_PASSWORD }}
@@ -97,6 +111,7 @@ jobs:
           php bin/console doctrine:database:create --env=test --if-not-exists
           php bin/console doctrine:migrations:migrate --env=test --no-interaction
 
+      # Lance la suite de tests PHPUnit (fonctionnels + unitaires), avec sortie lisible (--testdox)
       - name: Execution des tests PHPUnit
         env:
           CI_DB_PASSWORD: ${{ secrets.CI_MYSQL_PASSWORD }}
@@ -104,6 +119,7 @@ jobs:
           export DATABASE_URL="mysql://runflow:${CI_DB_PASSWORD}@127.0.0.1:3306/runflow?serverVersion=8.0"
           php bin/phpunit --testdox
 
+  # Job 2 : déploiement en préproduction, uniquement après succès des tests et uniquement sur un push vers prepod
   deploy:
     name: Deploiement en preproduction
     runs-on: ubuntu-latest
@@ -111,6 +127,7 @@ jobs:
     if: github.ref == 'refs/heads/prepod' && github.event_name == 'push'
 
     steps:
+      # Se connecte en SSH au VPS et relance la stack Docker de prépod avec la dernière image buildée
       - name: Deploiement sur le VPS via SSH
         uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
         with:
