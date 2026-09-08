@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\Utilisateur;
@@ -17,15 +19,15 @@ class ProfilType extends AbstractType
     {
         $builder
             ->add('nom', TextType::class, [
-                'label'       => 'Nom',
+                'label' => 'Nom',
                 'constraints' => [new NotBlank(message: 'Le nom est obligatoire.')],
             ])
             ->add('prenom', TextType::class, [
-                'label'       => 'Prénom',
+                'label' => 'Prénom',
                 'constraints' => [new NotBlank(message: 'Le prénom est obligatoire.')],
             ])
             ->add('telephone', TelType::class, [
-                'label'       => 'Téléphone',
+                'label' => 'Téléphone',
                 'constraints' => [
                     new NotBlank(message: 'Le téléphone est obligatoire.'),
                     new Regex(

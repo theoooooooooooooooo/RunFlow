@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Security;
 
 use App\Entity\Utilisateur;
@@ -20,7 +22,7 @@ class UtilisateurChecker implements UserCheckerInterface
      * passe soit vérifié.
      *
      * @throws CustomUserMessageAccountStatusException si Utilisateur::isActif() est false ;
-     *         l'authentification échoue et aucune session n'est ouverte.
+     *                                                 l'authentification échoue et aucune session n'est ouverte
      */
     public function checkPreAuth(UserInterface $user): void
     {
@@ -29,9 +31,7 @@ class UtilisateurChecker implements UserCheckerInterface
         }
 
         if (!$user->isActif()) {
-            throw new CustomUserMessageAccountStatusException(
-                'Votre compte a été désactivé. Veuillez contacter l\'administrateur.'
-            );
+            throw new CustomUserMessageAccountStatusException('Votre compte a été désactivé. Veuillez contacter l\'administrateur.');
         }
     }
 

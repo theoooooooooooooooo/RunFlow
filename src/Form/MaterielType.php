@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\Materiel;
@@ -18,17 +20,17 @@ class MaterielType extends AbstractType
     {
         $builder
             ->add('nom', TextType::class, [
-                'label'       => 'Nom du matériel',
-                'attr'        => ['placeholder' => 'Ex: Joint torique 20mm'],
+                'label' => 'Nom du matériel',
+                'attr' => ['placeholder' => 'Ex: Joint torique 20mm'],
                 'constraints' => [new NotBlank(message: 'Le nom est obligatoire.')],
             ])
             ->add('description', TextareaType::class, [
-                'label'    => 'Description',
+                'label' => 'Description',
                 'required' => false,
-                'attr'     => ['rows' => 3, 'placeholder' => 'Détails, référence, usage...'],
+                'attr' => ['rows' => 3, 'placeholder' => 'Détails, référence, usage...'],
             ])
             ->add('quantite_stock', IntegerType::class, [
-                'label'       => 'Quantité en stock',
+                'label' => 'Quantité en stock',
                 'constraints' => [
                     new NotBlank(message: 'La quantité est obligatoire.'),
                     new PositiveOrZero(message: 'La quantité ne peut pas être négative.'),

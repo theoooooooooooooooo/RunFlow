@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Intervention;
-use App\Entity\Utilisateur;
 use App\Enum\StatutInterventionEnum;
 use App\Form\AffectationTechnicienType;
 use App\Form\InterventionAdminType;
@@ -21,12 +22,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class InterventionController extends AbstractController
 {
     /**
-     * Liste toutes les interventions avec filtre par statut
+     * Liste toutes les interventions avec filtre par statut.
      */
     #[Route('/', name: 'app_admin_intervention_index', methods: ['GET'])]
     public function index(
         Request $request,
-        InterventionRepository $repository
+        InterventionRepository $repository,
     ): Response {
         $statut = $request->query->get('statut');
 
@@ -36,8 +37,8 @@ final class InterventionController extends AbstractController
 
         return $this->render('admin/intervention/index.html.twig', [
             'interventions' => $interventions,
-            'statut_actif'  => $statut,
-            'statuts'       => StatutInterventionEnum::cases(),
+            'statut_actif' => $statut,
+            'statuts' => StatutInterventionEnum::cases(),
         ]);
     }
 
@@ -57,7 +58,7 @@ final class InterventionController extends AbstractController
         Intervention $intervention,
         Request $request,
         EntityManagerInterface $em,
-        MaterielRepository $materielRepo
+        MaterielRepository $materielRepo,
     ): Response {
         // Capture l'état du matériel AVANT modification (pour restituer le stock)
         $ancienMateriel = [];
@@ -69,13 +70,12 @@ final class InterventionController extends AbstractController
             $ancienMateriel[$materielId]['quantite'] += $mi->getQuantite();
         }
 
-        $dejaPlanifiee = $intervention->getStatut() === StatutInterventionEnum::PLANIFIEE;
+        $dejaPlanifiee = StatutInterventionEnum::PLANIFIEE === $intervention->getStatut();
 
         $affectationForm = $this->createForm(AffectationTechnicienType::class, $intervention);
         $affectationForm->handleRequest($request);
 
         if ($affectationForm->isSubmitted() && $affectationForm->isValid()) {
-
             // Restitue l'ancien stock avant de recalculer
             foreach ($ancienMateriel as $data) {
                 $data['materiel']->setQuantiteStock($data['materiel']->getQuantiteStock() + $data['quantite']);
@@ -90,6 +90,7 @@ final class InterventionController extends AbstractController
                         $mi->getQuantite(),
                         $mi->getMateriel()->getQuantiteStock()
                     ));
+
                     return $this->redirectToRoute('app_admin_intervention_show', ['id' => $intervention->getId()]);
                 }
             }
@@ -106,12 +107,13 @@ final class InterventionController extends AbstractController
                 ? 'Affectation mise à jour avec succès.'
                 : 'Technicien affecté et intervention planifiée.'
             );
+
             return $this->redirectToRoute('app_admin_intervention_show', ['id' => $intervention->getId()]);
         }
 
         return $this->render('admin/intervention/show.html.twig', [
-            'intervention'          => $intervention,
-            'affectationForm'       => $affectationForm,
+            'intervention' => $intervention,
+            'affectationForm' => $affectationForm,
             'materiels_disponibles' => $materielRepo->findAll(),
         ]);
     }
@@ -127,10 +129,11 @@ final class InterventionController extends AbstractController
     #[Route('/{id}/accepter', name: 'app_admin_intervention_accepter', methods: ['POST'])]
     public function accepter(
         Intervention $intervention,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
-        if ($intervention->getStatut() !== StatutInterventionEnum::EN_ATTENTE) {
+        if (StatutInterventionEnum::EN_ATTENTE !== $intervention->getStatut()) {
             $this->addFlash('error', 'Cette intervention ne peut pas être acceptée.');
+
             return $this->redirectToRoute('app_admin_intervention_show', ['id' => $intervention->getId()]);
         }
 
@@ -138,6 +141,7 @@ final class InterventionController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'La demande a été acceptée.');
+
         return $this->redirectToRoute('app_admin_intervention_show', ['id' => $intervention->getId()]);
     }
 
@@ -152,10 +156,11 @@ final class InterventionController extends AbstractController
     #[Route('/{id}/refuser', name: 'app_admin_intervention_refuser', methods: ['POST'])]
     public function refuser(
         Intervention $intervention,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
-        if ($intervention->getStatut() !== StatutInterventionEnum::EN_ATTENTE) {
+        if (StatutInterventionEnum::EN_ATTENTE !== $intervention->getStatut()) {
             $this->addFlash('error', 'Cette intervention ne peut pas être refusée.');
+
             return $this->redirectToRoute('app_admin_intervention_show', ['id' => $intervention->getId()]);
         }
 
@@ -163,17 +168,18 @@ final class InterventionController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'La demande a été refusée.');
+
         return $this->redirectToRoute('app_admin_intervention_index');
     }
 
     /**
-     * Modifier une intervention (statut, description)
+     * Modifier une intervention (statut, description).
      */
     #[Route('/{id}/edit', name: 'app_admin_intervention_edit', methods: ['GET', 'POST'])]
     public function edit(
         Intervention $intervention,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
         $form = $this->createForm(InterventionAdminType::class, $intervention);
         $form->handleRequest($request);
@@ -181,11 +187,12 @@ final class InterventionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
             $this->addFlash('success', 'Intervention mise à jour.');
+
             return $this->redirectToRoute('app_admin_intervention_show', ['id' => $intervention->getId()]);
         }
 
         return $this->render('admin/intervention/edit.html.twig', [
-            'form'         => $form,
+            'form' => $form,
             'intervention' => $intervention,
         ]);
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Security;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -60,7 +62,7 @@ class UtilisateurAuthenticator extends AbstractLoginFormAuthenticator
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-      $user = $token->getUser();
+        $user = $token->getUser();
 
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return new RedirectResponse(
@@ -80,7 +82,7 @@ class UtilisateurAuthenticator extends AbstractLoginFormAuthenticator
     }
 
     /**
-     * URL vers laquelle Symfony redirige en cas d'échec d'authentification
+     * URL vers laquelle Symfony redirige en cas d'échec d'authentification.
      */
     protected function getLoginUrl(Request $request): string
     {

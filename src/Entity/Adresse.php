@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\AdresseRepository;
@@ -123,6 +125,6 @@ class Adresse
 
     public function __toString(): string
     {
-        return $this->rue . ', ' . $this->code_postal . ' ' . $this->ville;
+        return $this->rue.', '.$this->code_postal.' '.$this->ville;
     }
 }

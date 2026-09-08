@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -9,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class LegalController extends AbstractController
 {
     /**
-     * Affiche les conditions générales d'utilisation
+     * Affiche les conditions générales d'utilisation.
      */
     #[Route('/cgu', name: 'app_cgu', methods: ['GET'])]
     public function cgu(): Response
@@ -18,7 +20,7 @@ final class LegalController extends AbstractController
     }
 
     /**
-     * Affiche la politique de confidentialité (RGPD)
+     * Affiche la politique de confidentialité (RGPD).
      */
     #[Route('/politique-confidentialite', name: 'app_politique_confidentialite', methods: ['GET'])]
     public function politiqueConfidentialite(): Response

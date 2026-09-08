@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Technicien;
 
 use App\Entity\Commentaire;
@@ -22,7 +24,7 @@ final class InterventionController extends AbstractController
      * Vérifie que l'intervention appartient bien au technicien connecté.
      *
      * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException si l'intervention
-     *         n'est pas assignée au technicien connecté ; aucune donnée n'est modifiée.
+     *                                                                          n'est pas assignée au technicien connecté ; aucune donnée n'est modifiée
      */
     private function verifierProprietaire(Intervention $intervention): void
     {
@@ -41,19 +43,20 @@ final class InterventionController extends AbstractController
      * (message d'erreur affiché, aucune donnée modifiée).
      *
      * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException si l'intervention
-     *         n'est pas assignée au technicien connecté.
+     *                                                                          n'est pas assignée au technicien connecté.
      *
      * Effet de bord : flush l'EntityManager si le changement de statut est appliqué.
      */
     #[Route('/{id}/demarrer', name: 'app_technicien_intervention_demarrer', methods: ['POST'])]
     public function demarrer(
         Intervention $intervention,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
         $this->verifierProprietaire($intervention);
 
-        if ($intervention->getStatut() !== StatutInterventionEnum::PLANIFIEE) {
+        if (StatutInterventionEnum::PLANIFIEE !== $intervention->getStatut()) {
             $this->addFlash('error', 'Cette intervention ne peut pas être démarrée.');
+
             return $this->redirectToRoute('app_intervention_show', ['id' => $intervention->getId()]);
         }
 
@@ -61,6 +64,7 @@ final class InterventionController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Intervention démarrée.');
+
         return $this->redirectToRoute('app_intervention_show', ['id' => $intervention->getId()]);
     }
 
@@ -72,7 +76,7 @@ final class InterventionController extends AbstractController
      * (message d'erreur affiché, aucune donnée modifiée).
      *
      * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException si l'intervention
-     *         n'est pas assignée au technicien connecté.
+     *                                                                          n'est pas assignée au technicien connecté.
      *
      * Effet de bord : persist du commentaire et flush de l'EntityManager en cas de validation.
      */
@@ -80,12 +84,13 @@ final class InterventionController extends AbstractController
     public function valider(
         Intervention $intervention,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
         $this->verifierProprietaire($intervention);
 
-        if ($intervention->getStatut() !== StatutInterventionEnum::EN_COURS) {
+        if (StatutInterventionEnum::EN_COURS !== $intervention->getStatut()) {
             $this->addFlash('error', 'Cette intervention ne peut pas être validée pour le moment.');
+
             return $this->redirectToRoute('app_intervention_show', ['id' => $intervention->getId()]);
         }
 
@@ -109,12 +114,13 @@ final class InterventionController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Intervention validée et terminée avec succès.');
+
             return $this->redirectToRoute('app_intervention_technicien');
         }
 
         return $this->render('technicien/intervention/valider.html.twig', [
             'intervention' => $intervention,
-            'form'         => $form,
+            'form' => $form,
         ]);
     }
 }

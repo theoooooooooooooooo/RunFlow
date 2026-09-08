@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Technicien;
 
 use App\Entity\Utilisateur;
@@ -13,7 +15,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class DashboardController extends AbstractController
 {
     /**
-     * Tableau de bord technicien : interventions actives, historique et prochaine intervention
+     * Tableau de bord technicien : interventions actives, historique et prochaine intervention.
      */
     #[Route('/technicien/dashboard', name: 'app_technicien_dashboard')]
     public function index(InterventionRepository $interventionRepo): Response
@@ -21,13 +23,13 @@ final class DashboardController extends AbstractController
         /** @var Utilisateur $user */
         $user = $this->getUser();
 
-        $interventions  = $interventionRepo->findByTechnicien($user);
-        $historique     = $interventionRepo->findHistoriqueTechnicien($user);
+        $interventions = $interventionRepo->findByTechnicien($user);
+        $historique = $interventionRepo->findHistoriqueTechnicien($user);
 
         // Prochaine intervention planifiée
         $prochaine = null;
         foreach ($interventions as $i) {
-            if ($i->getDatePlanifiee() !== null) {
+            if (null !== $i->getDatePlanifiee()) {
                 $prochaine = $i;
                 break;
             }
@@ -35,10 +37,10 @@ final class DashboardController extends AbstractController
 
         return $this->render('technicien/dashboard/index.html.twig', [
             'interventions' => $interventions,
-            'historique'    => $historique,
-            'prochaine'     => $prochaine,
-            'nb_actives'    => count($interventions),
-            'nb_terminees'  => count($historique),
+            'historique' => $historique,
+            'prochaine' => $prochaine,
+            'nb_actives' => count($interventions),
+            'nb_terminees' => count($historique),
         ]);
     }
 }

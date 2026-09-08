@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enum;
 
 enum StatutInterventionEnum: string
@@ -11,10 +13,10 @@ enum StatutInterventionEnum: string
     case EN_COURS = 'en_cours';
     case TERMINEE = 'terminee';
     case ANNULEE = 'annulee';
-    
+
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::EN_ATTENTE => 'En attente',
             self::ACCEPTEE => 'Acceptée',
             self::REFUSEE => 'Refusée',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\Intervention;
@@ -17,14 +19,14 @@ class InterventionAdminType extends AbstractType
         $builder
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
-                'attr'  => ['rows' => 4],
+                'attr' => ['rows' => 4],
             ])
             ->add('statut', ChoiceType::class, [
-                'label'        => 'Statut',
-                'choices'      => StatutInterventionEnum::cases(),
-                'choice_label' => fn(StatutInterventionEnum $choice) => $choice->label(),
-                'choice_value' => fn(?StatutInterventionEnum $choice) => $choice?->value,
-                'help'         => 'À utiliser uniquement pour les cas exceptionnels (ex : annulation).',
+                'label' => 'Statut',
+                'choices' => StatutInterventionEnum::cases(),
+                'choice_label' => fn (StatutInterventionEnum $choice) => $choice->label(),
+                'choice_value' => fn (?StatutInterventionEnum $choice) => $choice?->value,
+                'help' => 'À utiliser uniquement pour les cas exceptionnels (ex : annulation).',
             ])
         ;
     }

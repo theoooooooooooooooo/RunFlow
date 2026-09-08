@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\Materiel;
@@ -17,7 +19,7 @@ class MaterielRepository extends ServiceEntityRepository
     }
 
     /**
-     * Matériels en stock critique (quantité <= seuil)
+     * Matériels en stock critique (quantité <= seuil).
      */
     public function findStockCritique(int $seuil = 5): array
     {
@@ -30,7 +32,7 @@ class MaterielRepository extends ServiceEntityRepository
     }
 
     /**
-     * Nombre total de références en stock
+     * Nombre total de références en stock.
      */
     public function countTotal(): int
     {
