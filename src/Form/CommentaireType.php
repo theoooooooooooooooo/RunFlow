@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\Commentaire;
@@ -16,8 +18,8 @@ class CommentaireType extends AbstractType
         $builder
             ->add('contenu', TextareaType::class, [
                 'label' => 'Commentaire d\'intervention',
-                'attr'  => [
-                    'rows'        => 5,
+                'attr' => [
+                    'rows' => 5,
                     'placeholder' => 'Décrivez le travail effectué, les pièces utilisées, les observations...',
                 ],
                 'constraints' => [

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\Utilisateur;
@@ -20,19 +22,19 @@ class TechnicienType extends AbstractType
     {
         $builder
             ->add('prenom', TextType::class, [
-                'label'       => 'Prénom',
+                'label' => 'Prénom',
                 'constraints' => [new NotBlank(message: 'Le prénom est obligatoire.')],
             ])
             ->add('nom', TextType::class, [
-                'label'       => 'Nom',
+                'label' => 'Nom',
                 'constraints' => [new NotBlank(message: 'Le nom est obligatoire.')],
             ])
             ->add('email', EmailType::class, [
-                'label'       => 'Email',
+                'label' => 'Email',
                 'constraints' => [new NotBlank(message: 'L\'email est obligatoire.')],
             ])
             ->add('telephone', TelType::class, [
-                'label'       => 'Téléphone',
+                'label' => 'Téléphone',
                 'constraints' => [
                     new NotBlank(message: 'Le téléphone est obligatoire.'),
                     new Regex(
@@ -46,8 +48,8 @@ class TechnicienType extends AbstractType
         // Mot de passe uniquement à la création
         if ($options['is_creation']) {
             $builder->add('plain_password', PasswordType::class, [
-                'label'    => 'Mot de passe',
-                'mapped'   => false,
+                'label' => 'Mot de passe',
+                'mapped' => false,
                 'constraints' => [
                     new NotBlank(message: 'Le mot de passe est obligatoire.'),
                     new Length(min: 8, minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères.'),
@@ -59,7 +61,7 @@ class TechnicienType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class'  => Utilisateur::class,
+            'data_class' => Utilisateur::class,
             'is_creation' => false,
         ]);
     }

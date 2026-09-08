@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\Materiel;
@@ -18,14 +20,14 @@ class MaterielInterventionType extends AbstractType
     {
         $builder
             ->add('materiel', EntityType::class, [
-                'label'        => 'Matériel',
-                'class'        => Materiel::class,
-                'choice_label' => fn(Materiel $m) => sprintf('%s (%d en stock)', $m->getNom(), $m->getQuantiteStock()),
-                'placeholder'  => '— Choisir un matériel —',
-                'constraints'  => [new NotBlank(message: 'Veuillez choisir un matériel.')],
+                'label' => 'Matériel',
+                'class' => Materiel::class,
+                'choice_label' => fn (Materiel $m) => sprintf('%s (%d en stock)', $m->getNom(), $m->getQuantiteStock()),
+                'placeholder' => '— Choisir un matériel —',
+                'constraints' => [new NotBlank(message: 'Veuillez choisir un matériel.')],
             ])
             ->add('quantite', IntegerType::class, [
-                'label'       => 'Quantité',
+                'label' => 'Quantité',
                 'constraints' => [
                     new NotBlank(message: 'La quantité est obligatoire.'),
                     new Positive(message: 'La quantité doit être positive.'),

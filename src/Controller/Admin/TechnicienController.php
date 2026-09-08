@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Utilisateur;
@@ -18,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class TechnicienController extends AbstractController
 {
     /**
-     * Liste des techniciens
+     * Liste des techniciens.
      */
     #[Route('/', name: 'app_admin_technicien_index', methods: ['GET'])]
     public function index(UtilisateurRepository $repository): Response
@@ -29,13 +31,13 @@ final class TechnicienController extends AbstractController
     }
 
     /**
-     * Créer un technicien
+     * Créer un technicien.
      */
     #[Route('/new', name: 'app_admin_technicien_new', methods: ['GET', 'POST'])]
     public function new(
         Request $request,
         EntityManagerInterface $em,
-        UserPasswordHasherInterface $hasher
+        UserPasswordHasherInterface $hasher,
     ): Response {
         $technicien = new Utilisateur();
         $technicien->setRoles(['ROLE_TECHNICIEN']);
@@ -51,6 +53,7 @@ final class TechnicienController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Le technicien a été créé avec succès.');
+
             return $this->redirectToRoute('app_admin_technicien_index');
         }
 
@@ -60,13 +63,13 @@ final class TechnicienController extends AbstractController
     }
 
     /**
-     * Modifier un technicien
+     * Modifier un technicien.
      */
     #[Route('/{id}/edit', name: 'app_admin_technicien_edit', methods: ['GET', 'POST'])]
     public function edit(
         Utilisateur $technicien,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
         $this->verifierEstTechnicien($technicien);
 
@@ -76,11 +79,12 @@ final class TechnicienController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
             $this->addFlash('success', 'Le technicien a été mis à jour.');
+
             return $this->redirectToRoute('app_admin_technicien_index');
         }
 
         return $this->render('admin/technicien/edit.html.twig', [
-            'form'       => $form,
+            'form' => $form,
             'technicien' => $technicien,
         ]);
     }
@@ -92,7 +96,7 @@ final class TechnicienController extends AbstractController
      * voir {@see \App\Security\UtilisateurChecker::checkPreAuth()}.
      *
      * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException si l'utilisateur ciblé
-     *         n'est pas un technicien ; aucune donnée n'est modifiée.
+     *                                                                       n'est pas un technicien ; aucune donnée n'est modifiée.
      *
      * Effet de bord : flush l'EntityManager.
      */
@@ -100,12 +104,13 @@ final class TechnicienController extends AbstractController
     public function toggleActif(
         Utilisateur $technicien,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
         $this->verifierEstTechnicien($technicien);
 
-        if (!$this->isCsrfTokenValid('toggle' . $technicien->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('toggle'.$technicien->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token invalide.');
+
             return $this->redirectToRoute('app_admin_technicien_index');
         }
 
@@ -117,6 +122,7 @@ final class TechnicienController extends AbstractController
             : 'Le technicien a été désactivé.';
 
         $this->addFlash('success', $message);
+
         return $this->redirectToRoute('app_admin_technicien_index');
     }
 

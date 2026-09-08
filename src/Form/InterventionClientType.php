@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use App\Entity\Adresse;
@@ -24,19 +26,19 @@ class InterventionClientType extends AbstractType
 
         $builder
             ->add('description', TextareaType::class, [
-                'label'       => 'Description du problème',
-                'attr'        => [
-                    'rows'        => 5,
+                'label' => 'Description du problème',
+                'attr' => [
+                    'rows' => 5,
                     'placeholder' => 'Décrivez votre problème en détail...',
                 ],
                 'constraints' => [new NotBlank(message: 'La description est obligatoire.')],
             ])
             ->add('date_souhaitee', DateTimeType::class, [
-                'label'       => 'Date et heure souhaitées',
-                'widget'      => 'single_text',
-                'input'       => 'datetime_immutable',
-                'attr'        => [
-                    'id'          => 'date-souhaitee-picker',
+                'label' => 'Date et heure souhaitées',
+                'widget' => 'single_text',
+                'input' => 'datetime_immutable',
+                'attr' => [
+                    'id' => 'date-souhaitee-picker',
                     'placeholder' => 'Choisissez une date et une heure',
                     'autocomplete' => 'off',
                 ],
@@ -45,13 +47,13 @@ class InterventionClientType extends AbstractType
 
             // Sélection d'une adresse déjà utilisée
             ->add('adresse_existante', EntityType::class, [
-                'label'         => 'Adresse d\'intervention',
-                'class'         => Adresse::class,
-                'choice_label'  => fn(Adresse $a) => (string) $a,
-                'placeholder'   => '— Nouvelle adresse —',
-                'required'      => false,
-                'mapped'        => false,
-                'attr'          => ['id' => 'select-adresse-existante'],
+                'label' => 'Adresse d\'intervention',
+                'class' => Adresse::class,
+                'choice_label' => fn (Adresse $a) => (string) $a,
+                'placeholder' => '— Nouvelle adresse —',
+                'required' => false,
+                'mapped' => false,
+                'attr' => ['id' => 'select-adresse-existante'],
                 'query_builder' => function (AdresseRepository $repo) use ($client) {
                     return $repo->createQueryBuilder('a')
                         ->innerJoin('a.interventions', 'i')
@@ -63,28 +65,28 @@ class InterventionClientType extends AbstractType
 
             // Champs adresse manuelle (utilisés uniquement si "Nouvelle adresse" est choisi)
             ->add('adresse_rue', TextType::class, [
-                'label'    => 'Rue',
-                'mapped'   => false,
+                'label' => 'Rue',
+                'mapped' => false,
                 'required' => false,
-                'attr'     => ['placeholder' => '12 rue des Flamboyants'],
+                'attr' => ['placeholder' => '12 rue des Flamboyants'],
             ])
             ->add('adresse_ville', TextType::class, [
-                'label'    => 'Ville',
-                'mapped'   => false,
+                'label' => 'Ville',
+                'mapped' => false,
                 'required' => false,
-                'attr'     => ['placeholder' => 'Saint-Denis'],
+                'attr' => ['placeholder' => 'Saint-Denis'],
             ])
             ->add('adresse_code_postal', TextType::class, [
-                'label'    => 'Code postal',
-                'mapped'   => false,
+                'label' => 'Code postal',
+                'mapped' => false,
                 'required' => false,
-                'attr'     => ['placeholder' => '97400'],
+                'attr' => ['placeholder' => '97400'],
             ])
             ->add('adresse_complement', TextType::class, [
-                'label'    => 'Complément d\'adresse',
-                'mapped'   => false,
+                'label' => 'Complément d\'adresse',
+                'mapped' => false,
                 'required' => false,
-                'attr'     => ['placeholder' => 'Appartement, étage... (facultatif)'],
+                'attr' => ['placeholder' => 'Appartement, étage... (facultatif)'],
             ])
         ;
     }

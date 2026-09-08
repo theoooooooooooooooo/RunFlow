@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\UtilisateurRepository;
@@ -194,12 +196,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setActif(bool $actif): static
     {
         $this->actif = $actif;
+
         return $this;
     }
 
     public function getNomComplet(): string
     {
-        return $this->prenom . ' ' . $this->nom;
+        return $this->prenom.' '.$this->nom;
     }
 
     /**
@@ -300,6 +303,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setDateAnonymisation(?\DateTimeImmutable $date_anonymisation): static
     {
         $this->date_anonymisation = $date_anonymisation;
+
         return $this;
     }
 }

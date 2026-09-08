@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form;
 
 use Symfony\Component\Form\AbstractType;
@@ -17,20 +19,20 @@ class ChangePasswordType extends AbstractType
     {
         $builder
             ->add('current_password', PasswordType::class, [
-                'label'    => 'Mot de passe actuel',
-                'mapped'   => false,
+                'label' => 'Mot de passe actuel',
+                'mapped' => false,
                 'constraints' => [
                     new NotBlank(message: 'Veuillez saisir votre mot de passe actuel.'),
                     new UserPassword(message: 'Mot de passe incorrect.'),
                 ],
             ])
             ->add('new_password', RepeatedType::class, [
-                'type'            => PasswordType::class,
-                'mapped'          => false,
-                'first_options'   => ['label' => 'Nouveau mot de passe'],
-                'second_options'  => ['label' => 'Confirmer le nouveau mot de passe'],
+                'type' => PasswordType::class,
+                'mapped' => false,
+                'first_options' => ['label' => 'Nouveau mot de passe'],
+                'second_options' => ['label' => 'Confirmer le nouveau mot de passe'],
                 'invalid_message' => 'Les mots de passe ne correspondent pas.',
-                'constraints'     => [
+                'constraints' => [
                     new NotBlank(message: 'Veuillez saisir un nouveau mot de passe.'),
                     new Length(
                         min: 8,

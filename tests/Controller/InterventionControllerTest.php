@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Controller;
 
 use App\Entity\Utilisateur;
@@ -11,7 +13,7 @@ class InterventionControllerTest extends WebTestCase
     private function creerClient(EntityManagerInterface $em): Utilisateur
     {
         $client = new Utilisateur();
-        $client->setEmail('client.test.' . uniqid() . '@example.com');
+        $client->setEmail('client.test.'.uniqid().'@example.com');
         $client->setNom('Client');
         $client->setPrenom('Test');
         $client->setTelephone('0692111111');

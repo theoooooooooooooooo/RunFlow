@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Adresse;
@@ -20,7 +22,7 @@ class AppFixtures extends Fixture
     private Generator $faker;
 
     public function __construct(
-        private readonly UserPasswordHasherInterface $passwordHasher
+        private readonly UserPasswordHasherInterface $passwordHasher,
     ) {
         $this->faker = Factory::create('fr_FR');
     }
@@ -45,14 +47,14 @@ class AppFixtures extends Fixture
         // 2. TECHNICIENS (6)
         // ─────────────────────────────────────────────
         $techniciens = [];
-        for ($i = 1; $i <= 6; $i++) {
+        for ($i = 1; $i <= 6; ++$i) {
             $technicien = new Utilisateur();
             $technicien->setNom($this->faker->lastName());
             $technicien->setPrenom($this->faker->firstName());
-            $technicien->setEmail('technicien' . $i . '@runflow.re');
-            $technicien->setTelephone('069' . $this->faker->numerify('#######'));
+            $technicien->setEmail('technicien'.$i.'@runflow.re');
+            $technicien->setTelephone('069'.$this->faker->numerify('#######'));
             $technicien->setRoles(['ROLE_TECHNICIEN']);
-            $technicien->setActif($i !== 6); // le dernier est désactivé pour tester ce cas
+            $technicien->setActif(6 !== $i); // le dernier est désactivé pour tester ce cas
             $technicien->setPassword($this->passwordHasher->hashPassword($technicien, 'Technicien123!'));
             $manager->persist($technicien);
             $techniciens[] = $technicien;
@@ -62,12 +64,12 @@ class AppFixtures extends Fixture
         // 3. CLIENTS (20)
         // ─────────────────────────────────────────────
         $clients = [];
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 20; ++$i) {
             $client = new Utilisateur();
             $client->setNom($this->faker->lastName());
             $client->setPrenom($this->faker->firstName());
-            $client->setEmail('client' . $i . '@example.com');
-            $client->setTelephone('069' . $this->faker->numerify('#######'));
+            $client->setEmail('client'.$i.'@example.com');
+            $client->setTelephone('069'.$this->faker->numerify('#######'));
             $client->setRoles(['ROLE_CLIENT']);
             $client->setPassword($this->passwordHasher->hashPassword($client, 'Client123!'));
             $manager->persist($client);
@@ -107,12 +109,12 @@ class AppFixtures extends Fixture
         // ─────────────────────────────────────────────
         $statutsRepartition = [
             'en_attente' => 8,
-            'acceptee'   => 5,
-            'refusee'    => 3,
-            'planifiee'  => 8,
-            'en_cours'   => 4,
-            'terminee'   => 10,
-            'annulee'    => 2,
+            'acceptee' => 5,
+            'refusee' => 3,
+            'planifiee' => 8,
+            'en_cours' => 4,
+            'terminee' => 10,
+            'annulee' => 2,
         ];
 
         $descriptions = [
@@ -130,7 +132,7 @@ class AppFixtures extends Fixture
 
         foreach ($statutsRepartition as $statutValue => $nombre) {
             $statut = StatutInterventionEnum::from($statutValue);
-            for ($i = 0; $i < $nombre; $i++) {
+            for ($i = 0; $i < $nombre; ++$i) {
                 $adresse = new Adresse();
                 $adresse->setRue($this->faker->streetAddress());
                 $adresse->setVille($this->faker->randomElement($villesReunion));
@@ -156,7 +158,7 @@ class AppFixtures extends Fixture
                     StatutInterventionEnum::EN_COURS,
                     StatutInterventionEnum::TERMINEE,
                 ], true)) {
-                    $technicien = $this->faker->randomElement(array_filter($techniciens, fn($t) => $t->isActif()));
+                    $technicien = $this->faker->randomElement(array_filter($techniciens, fn ($t) => $t->isActif()));
                     $intervention->setTechnicien($technicien);
                     $intervention->setDureeEstimee($this->faker->randomElement([60, 90, 120, 180]));
                     $intervention->setDatePlanifiee(\DateTimeImmutable::createFromMutable(
@@ -176,7 +178,7 @@ class AppFixtures extends Fixture
                 }
 
                 // Commentaire uniquement pour les interventions terminées
-                if ($statut === StatutInterventionEnum::TERMINEE) {
+                if (StatutInterventionEnum::TERMINEE === $statut) {
                     $commentaire = new Commentaire();
                     $commentaire->setContenu($this->faker->paragraph(2));
                     $commentaire->setDate(\DateTimeImmutable::createFromMutable(
@@ -195,4 +197,3 @@ class AppFixtures extends Fixture
         $manager->flush();
     }
 }
-

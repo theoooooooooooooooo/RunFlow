@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
@@ -18,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class ProfilController extends AbstractController
 {
     /**
-     * Consulter et modifier son profil
+     * Consulter et modifier son profil.
      */
     #[Route('/', name: 'app_profil', methods: ['GET', 'POST'])]
     public function index(Request $request, EntityManagerInterface $em): Response
@@ -32,6 +34,7 @@ final class ProfilController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
             $this->addFlash('success', 'Votre profil a été mis à jour.');
+
             return $this->redirectToRoute('app_profil');
         }
 
@@ -42,13 +45,13 @@ final class ProfilController extends AbstractController
     }
 
     /**
-     * Changer le mot de passe
+     * Changer le mot de passe.
      */
     #[Route('/mot-de-passe', name: 'app_profil_password', methods: ['GET', 'POST'])]
     public function changePassword(
         Request $request,
         EntityManagerInterface $em,
-        UserPasswordHasherInterface $hasher
+        UserPasswordHasherInterface $hasher,
     ): Response {
         /** @var Utilisateur $user */
         $user = $this->getUser();
@@ -63,6 +66,7 @@ final class ProfilController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Votre mot de passe a été modifié avec succès.');
+
             return $this->redirectToRoute('app_profil');
         }
 
@@ -72,7 +76,7 @@ final class ProfilController extends AbstractController
     }
 
     /**
-     * Consulter ses données personnelles (RGPD)
+     * Consulter ses données personnelles (RGPD).
      */
     #[Route('/mes-donnees', name: 'app_profil_donnees', methods: ['GET'])]
     public function mesDonnees(): Response
@@ -98,19 +102,20 @@ final class ProfilController extends AbstractController
     #[IsGranted('ROLE_CLIENT')]
     public function supprimer(
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
         /** @var Utilisateur $user */
         $user = $this->getUser();
 
         if (!$this->isCsrfTokenValid('supprimer_compte', $request->request->get('_token'))) {
             $this->addFlash('error', 'Token invalide.');
+
             return $this->redirectToRoute('app_profil');
         }
 
         $user->setNom('Utilisateur');
         $user->setPrenom('Anonymisé');
-        $user->setEmail('anonyme_' . $user->getId() . '_' . uniqid() . '@runflow.local');
+        $user->setEmail('anonyme_'.$user->getId().'_'.uniqid().'@runflow.local');
         $user->setTelephone('0000000000');
         $user->setPassword(bin2hex(random_bytes(32)));
         $user->setRoles(['ROLE_ANONYMISE']);
@@ -122,6 +127,7 @@ final class ProfilController extends AbstractController
         $request->getSession()->invalidate();
 
         $this->addFlash('success', 'Votre compte a été supprimé et vos données anonymisées.');
+
         return $this->redirectToRoute('app_login');
     }
 }

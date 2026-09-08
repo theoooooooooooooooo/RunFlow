@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Controller;
 
 use App\Entity\Utilisateur;
@@ -15,7 +17,7 @@ class RegistrationControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
 
-        $email = 'test.phpunit.' . uniqid() . '@example.com';
+        $email = 'test.phpunit.'.uniqid().'@example.com';
 
         $client->submitForm('S\'inscrire', [
             'registration_form[nom]' => 'Test',
@@ -36,12 +38,12 @@ class RegistrationControllerTest extends WebTestCase
         $this->assertContains('ROLE_CLIENT', $utilisateur->getRoles());
     }
 
-   public function testInscriptionAvecEmailDejaUtilise(): void
+    public function testInscriptionAvecEmailDejaUtilise(): void
     {
         $client = static::createClient();
         $em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $emailExistant = 'existant.' . uniqid() . '@example.com';
+        $emailExistant = 'existant.'.uniqid().'@example.com';
 
         $existant = new Utilisateur();
         $existant->setEmail($emailExistant);
