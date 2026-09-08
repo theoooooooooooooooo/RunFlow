@@ -4,12 +4,12 @@ name: CI
 on:
   push:
     branches:
-      - Dev
+      - dev
       - prepod
       - main
   pull_request:
     branches:
-      - Dev
+      - dev
       - prepod
       - main
 
