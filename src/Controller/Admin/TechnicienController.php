@@ -86,7 +86,15 @@ final class TechnicienController extends AbstractController
     }
 
     /**
-     * Activer / désactiver un technicien
+     * Active ou désactive un compte technicien.
+     *
+     * Un technicien désactivé (Utilisateur::isActif() === false) est bloqué à la connexion,
+     * voir {@see \App\Security\UtilisateurChecker::checkPreAuth()}.
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException si l'utilisateur ciblé
+     *         n'est pas un technicien ; aucune donnée n'est modifiée.
+     *
+     * Effet de bord : flush l'EntityManager.
      */
     #[Route('/{id}/toggle-actif', name: 'app_admin_technicien_toggle', methods: ['POST'])]
     public function toggleActif(

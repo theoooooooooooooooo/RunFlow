@@ -42,7 +42,15 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Détail d'une intervention + formulaire d'affectation
+     * Détail d'une intervention + formulaire d'affectation.
+     *
+     * Lors de la soumission du formulaire d'affectation, restitue d'abord au stock les quantités
+     * de matériel précédemment réservées par cette intervention, puis vérifie que le stock est
+     * suffisant pour la nouvelle sélection de matériel avant de la déduire. Si le stock est
+     * insuffisant, aucune quantité n'est modifiée et l'intervention reste dans son statut courant.
+     * En cas de succès, l'intervention passe au statut PLANIFIEE.
+     *
+     * Effet de bord : modifie Materiel::quantiteStock et flush l'EntityManager.
      */
     #[Route('/{id}', name: 'app_admin_intervention_show', methods: ['GET', 'POST'])]
     public function show(
@@ -109,7 +117,12 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Accepter une demande
+     * Accepte une demande d'intervention.
+     *
+     * N'agit que si l'intervention est au statut EN_ATTENTE ; sinon la demande est ignorée
+     * (message d'erreur affiché, aucune donnée modifiée).
+     *
+     * Effet de bord : flush l'EntityManager si le changement de statut est appliqué.
      */
     #[Route('/{id}/accepter', name: 'app_admin_intervention_accepter', methods: ['POST'])]
     public function accepter(
@@ -129,7 +142,12 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Refuser une demande
+     * Refuse une demande d'intervention.
+     *
+     * N'agit que si l'intervention est au statut EN_ATTENTE ; sinon la demande est ignorée
+     * (message d'erreur affiché, aucune donnée modifiée).
+     *
+     * Effet de bord : flush l'EntityManager si le changement de statut est appliqué.
      */
     #[Route('/{id}/refuser', name: 'app_admin_intervention_refuser', methods: ['POST'])]
     public function refuser(

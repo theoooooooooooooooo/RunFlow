@@ -19,7 +19,9 @@ class InterventionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Nombre d'interventions par statut (pour stats admin)
+     * Nombre d'interventions par statut, pour les statistiques du tableau de bord admin.
+     *
+     * @return array<string, int> Clé = valeur de l'enum StatutInterventionEnum (ex: "en_attente"), valeur = total.
      */
     public function countByStatut(): array
     {
@@ -75,7 +77,7 @@ class InterventionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Interventions du technicien connecté (actives)
+     * Interventions actives du technicien, c'est-à-dire tous statuts à l'exception de TERMINEE et ANNULEE.
      */
     public function findByTechnicien(Utilisateur $technicien): array
     {
@@ -90,7 +92,8 @@ class InterventionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Historique des interventions du technicien (terminées)
+     * Historique des interventions du technicien au statut TERMINEE, limité aux 10 plus récentes.
+     * Une intervention ANNULEE n'apparaît pas dans cet historique.
      */
     public function findHistoriqueTechnicien(Utilisateur $technicien): array
     {
@@ -121,7 +124,8 @@ class InterventionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Interventions planifiées à venir (pour le calendrier admin)
+     * Interventions avec une date planifiée, à l'exception de celles ANNULEE ou REFUSEE, pour
+     * alimenter le calendrier admin (voir {@see \App\Controller\Admin\PlanningController::creneaux()}).
      */
     public function findPlanifiees(): array
     {

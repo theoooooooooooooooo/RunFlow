@@ -76,7 +76,12 @@ final class MaterielController extends AbstractController
     }
 
     /**
-     * Supprimer un matériel (refusé s'il est déjà lié à des interventions)
+     * Supprime un matériel du stock.
+     *
+     * La suppression est refusée si le matériel est encore référencé par au moins une intervention
+     * (contrainte d'intégrité applicative, pas contrainte SQL) ; dans ce cas rien n'est supprimé.
+     *
+     * Effet de bord : remove + flush l'EntityManager si la suppression est autorisée.
      */
     #[Route('/{id}/delete', name: 'app_admin_materiel_delete', methods: ['POST'])]
     public function delete(
