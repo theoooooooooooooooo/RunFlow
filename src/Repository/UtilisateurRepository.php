@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\Utilisateur;
@@ -30,7 +32,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
     }
 
     /**
-     * Liste des techniciens
+     * Liste des techniciens.
      */
     public function findTechniciens(): array
     {
@@ -43,7 +45,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
     }
 
     /**
-     * Nombre de techniciens
+     * Nombre de techniciens.
      */
     public function countTechniciens(): int
     {
@@ -56,7 +58,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
     }
 
     /**
-     * Nombre de clients
+     * Nombre de clients.
      */
     public function countClients(): int
     {
@@ -87,7 +89,7 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
     }
 
     /**
-     * Liste des clients
+     * Liste des clients.
      */
     public function findClients(): array
     {

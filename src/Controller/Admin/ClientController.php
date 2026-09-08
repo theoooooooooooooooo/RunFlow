@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Utilisateur;
@@ -14,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class ClientController extends AbstractController
 {
     /**
-     * Liste des clients
+     * Liste des clients.
      */
     #[Route('/', name: 'app_admin_client_index', methods: ['GET'])]
     public function index(UtilisateurRepository $repository): Response
@@ -25,7 +27,7 @@ final class ClientController extends AbstractController
     }
 
     /**
-     * Détail d'un client (historique de ses interventions)
+     * Détail d'un client (historique de ses interventions).
      */
     #[Route('/{id}', name: 'app_admin_client_show', methods: ['GET'])]
     public function show(Utilisateur $client): Response

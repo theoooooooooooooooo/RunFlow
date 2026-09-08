@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -10,7 +12,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class SecurityController extends AbstractController
 {
     /**
-     * Affiche le formulaire de connexion (avec la dernière erreur éventuelle)
+     * Affiche le formulaire de connexion (avec la dernière erreur éventuelle).
      */
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
@@ -28,7 +30,7 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * Déconnexion : interceptée par le firewall Symfony, le corps n'est jamais exécuté
+     * Déconnexion : interceptée par le firewall Symfony, le corps n'est jamais exécuté.
      */
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void

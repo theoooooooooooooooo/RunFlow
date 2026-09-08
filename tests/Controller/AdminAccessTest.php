@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Controller;
 
 use App\Entity\Utilisateur;
@@ -14,7 +16,7 @@ class AdminAccessTest extends WebTestCase
         $em = static::getContainer()->get(EntityManagerInterface::class);
 
         $client = new Utilisateur();
-        $client->setEmail('client.access.' . uniqid() . '@example.com');
+        $client->setEmail('client.access.'.uniqid().'@example.com');
         $client->setNom('Client');
         $client->setPrenom('Access');
         $client->setTelephone('0692222222');
@@ -37,7 +39,7 @@ class AdminAccessTest extends WebTestCase
         $hasher = static::getContainer()->get('security.user_password_hasher');
 
         $technicien = new Utilisateur();
-        $technicien->setEmail('technicien.desactive.' . uniqid() . '@example.com');
+        $technicien->setEmail('technicien.desactive.'.uniqid().'@example.com');
         $technicien->setNom('Technicien');
         $technicien->setPrenom('Desactive');
         $technicien->setTelephone('0692333333');

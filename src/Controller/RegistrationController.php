@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
@@ -16,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class RegistrationController extends AbstractController
 {
     /**
-     * Inscription d'un nouveau client puis connexion automatique
+     * Inscription d'un nouveau client puis connexion automatique.
      */
     #[Route('/register', name: 'app_register')]
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager): Response

@@ -13,6 +13,10 @@ RUN apt update && apt install -y \
 # Installe les extensions PHP requises par l'appli : accès PDO/MySQL et cache opcode
 RUN docker-php-ext-install pdo pdo_mysql opcache
 
+# PCOV : pilote de couverture de code, uniquement en développement.
+# Volontairement absent de Dockerfile.prod : aucun outil d'analyse en production.
+RUN pecl install pcov && docker-php-ext-enable pcov
+
 # Configuration OPcache (gain de performance le plus important)
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 # Configuration PHP custom (php.ini) appliquée après la conf par défaut (préfixe zz- = chargée en dernier)

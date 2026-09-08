@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Controller;
 
 use App\Entity\Adresse;
@@ -14,9 +16,9 @@ class InterventionWorkflowTest extends WebTestCase
     private function creerUtilisateur(EntityManagerInterface $em, string $role, bool $actif = true): Utilisateur
     {
         $user = new Utilisateur();
-        $user->setEmail($role . '.' . uniqid() . '@example.com');
-        $user->setNom('Nom' . $role);
-        $user->setPrenom('Prenom' . $role);
+        $user->setEmail($role.'.'.uniqid().'@example.com');
+        $user->setNom('Nom'.$role);
+        $user->setPrenom('Prenom'.$role);
         $user->setTelephone('0692000000');
         $user->setPassword('hash-factice');
         $user->setRoles([$role]);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Enum\StatutInterventionEnum;
@@ -109,11 +111,12 @@ class Intervention
     public function setDureeEstimee(?int $duree_estimee): static
     {
         $this->duree_estimee = $duree_estimee;
+
         return $this;
     }
 
     /**
-     * Calcule la date de fin d'intervention à partir de la date planifiée + durée
+     * Calcule la date de fin d'intervention à partir de la date planifiée + durée.
      */
     public function getDateFinPlanifiee(): ?\DateTimeImmutable
     {
@@ -122,6 +125,7 @@ class Intervention
         }
 
         $duree = $this->duree_estimee ?? 120; // 2h par défaut si non renseignée
+
         return $this->date_planifiee->modify("+{$duree} minutes");
     }
 
@@ -199,6 +203,7 @@ class Intervention
             $this->materielInterventions->add($mi);
             $mi->setIntervention($this);
         }
+
         return $this;
     }
 
@@ -209,9 +214,10 @@ class Intervention
                 $mi->setIntervention(null);
             }
         }
+
         return $this;
     }
-    
+
     public function getCommentaire(): ?Commentaire
     {
         return $this->commentaire;
@@ -220,12 +226,12 @@ class Intervention
     public function setCommentaire(?Commentaire $commentaire): static
     {
         // unset the owning side of the relation if necessary
-        if ($commentaire === null && $this->commentaire !== null) {
+        if (null === $commentaire && null !== $this->commentaire) {
             $this->commentaire->setIntervention(null);
         }
 
         // set the owning side of the relation if necessary
-        if ($commentaire !== null && $commentaire->getIntervention() !== $this) {
+        if (null !== $commentaire && $commentaire->getIntervention() !== $this) {
             $commentaire->setIntervention($this);
         }
 

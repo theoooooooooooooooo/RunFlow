@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Adresse;
@@ -20,7 +22,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class InterventionController extends AbstractController
 {
     /**
-     * Interventions du client connecté
+     * Interventions du client connecté.
      */
     #[Route('/mes-demandes', name: 'app_intervention_client', methods: ['GET'])]
     #[IsGranted('ROLE_CLIENT')]
@@ -35,7 +37,7 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Interventions du technicien connecté
+     * Interventions du technicien connecté.
      */
     #[Route('/mes-interventions', name: 'app_intervention_technicien', methods: ['GET'])]
     #[IsGranted('ROLE_TECHNICIEN')]
@@ -70,24 +72,23 @@ final class InterventionController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
             $adresseExistante = $form->get('adresse_existante')->getData();
 
             if ($adresseExistante) {
                 // Réutilisation d'une adresse déjà associée à ce client
                 $adresse = $adresseExistante;
-
             } else {
                 // Nouvelle adresse : vérification des champs obligatoires
-                $rue          = trim((string) $form->get('adresse_rue')->getData());
-                $ville        = trim((string) $form->get('adresse_ville')->getData());
-                $codePostal   = trim((string) $form->get('adresse_code_postal')->getData());
-                $complement   = $form->get('adresse_complement')->getData();
+                $rue = trim((string) $form->get('adresse_rue')->getData());
+                $ville = trim((string) $form->get('adresse_ville')->getData());
+                $codePostal = trim((string) $form->get('adresse_code_postal')->getData());
+                $complement = $form->get('adresse_complement')->getData();
 
-                if ($rue === '' || $ville === '' || $codePostal === '') {
+                if ('' === $rue || '' === $ville || '' === $codePostal) {
                     $this->addFlash('error', 'Veuillez sélectionner une adresse existante ou renseigner une nouvelle adresse complète.');
+
                     return $this->render('intervention/new.html.twig', [
-                        'form'         => $form,
+                        'form' => $form,
                         'intervention' => $intervention,
                     ]);
                 }
@@ -124,11 +125,12 @@ final class InterventionController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Votre demande d\'intervention a bien été envoyée.');
+
             return $this->redirectToRoute('app_client_dashboard');
         }
 
         return $this->render('intervention/new.html.twig', [
-            'form'         => $form,
+            'form' => $form,
             'intervention' => $intervention,
         ]);
     }
@@ -137,8 +139,8 @@ final class InterventionController extends AbstractController
      * Détail d'une intervention (Client + Technicien).
      *
      * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException si l'utilisateur
-     *         connecté n'est ni administrateur, ni le client propriétaire de la demande, ni le
-     *         technicien qui y est affecté ; aucune donnée n'est modifiée.
+     *                                                                          connecté n'est ni administrateur, ni le client propriétaire de la demande, ni le
+     *                                                                          technicien qui y est affecté ; aucune donnée n'est modifiée
      */
     #[Route('/{id}', name: 'app_intervention_show', methods: ['GET'])]
     public function show(Intervention $intervention): Response

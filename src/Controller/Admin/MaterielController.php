@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Entity\Materiel;
@@ -17,19 +19,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class MaterielController extends AbstractController
 {
     /**
-     * Liste du matériel en stock, avec repérage du stock critique
+     * Liste du matériel en stock, avec repérage du stock critique.
      */
     #[Route('/', name: 'app_admin_materiel_index', methods: ['GET'])]
     public function index(MaterielRepository $repository): Response
     {
         return $this->render('admin/materiel/index.html.twig', [
-            'materiels'      => $repository->findAll(),
+            'materiels' => $repository->findAll(),
             'seuil_critique' => 5,
         ]);
     }
 
     /**
-     * Ajouter un nouveau matériel au stock
+     * Ajouter un nouveau matériel au stock.
      */
     #[Route('/new', name: 'app_admin_materiel_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
@@ -43,6 +45,7 @@ final class MaterielController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Le matériel a été ajouté au stock.');
+
             return $this->redirectToRoute('app_admin_materiel_index');
         }
 
@@ -52,13 +55,13 @@ final class MaterielController extends AbstractController
     }
 
     /**
-     * Modifier un matériel existant (nom, quantité en stock, etc.)
+     * Modifier un matériel existant (nom, quantité en stock, etc.).
      */
     #[Route('/{id}/edit', name: 'app_admin_materiel_edit', methods: ['GET', 'POST'])]
     public function edit(
         Materiel $materiel,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
         $form = $this->createForm(MaterielType::class, $materiel);
         $form->handleRequest($request);
@@ -66,11 +69,12 @@ final class MaterielController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
             $this->addFlash('success', 'Le matériel a été mis à jour.');
+
             return $this->redirectToRoute('app_admin_materiel_index');
         }
 
         return $this->render('admin/materiel/edit.html.twig', [
-            'form'     => $form,
+            'form' => $form,
             'materiel' => $materiel,
         ]);
     }
@@ -87,11 +91,12 @@ final class MaterielController extends AbstractController
     public function delete(
         Materiel $materiel,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
-        if ($this->isCsrfTokenValid('delete' . $materiel->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$materiel->getId(), $request->request->get('_token'))) {
             if (!$materiel->getMaterielInterventions()->isEmpty()) {
                 $this->addFlash('error', 'Impossible de supprimer : ce matériel est déjà lié à des interventions.');
+
                 return $this->redirectToRoute('app_admin_materiel_index');
             }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\Intervention;
@@ -21,7 +23,7 @@ class InterventionRepository extends ServiceEntityRepository
     /**
      * Nombre d'interventions par statut, pour les statistiques du tableau de bord admin.
      *
-     * @return array<string, int> Clé = valeur de l'enum StatutInterventionEnum (ex: "en_attente"), valeur = total.
+     * @return array<string, int> clé = valeur de l'enum StatutInterventionEnum (ex: "en_attente"), valeur = total
      */
     public function countByStatut(): array
     {
@@ -35,11 +37,12 @@ class InterventionRepository extends ServiceEntityRepository
         foreach ($results as $row) {
             $counts[$row['statut']->value] = (int) $row['total'];
         }
+
         return $counts;
     }
 
     /**
-     * Dernières interventions (pour dashboard admin)
+     * Dernières interventions (pour dashboard admin).
      */
     public function findDernieres(int $limit = 5): array
     {
@@ -51,7 +54,7 @@ class InterventionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Interventions en attente (admin)
+     * Interventions en attente (admin).
      */
     public function findEnAttente(): array
     {
@@ -64,7 +67,7 @@ class InterventionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Interventions du client connecté
+     * Interventions du client connecté.
      */
     public function findByClient(Utilisateur $client): array
     {
@@ -109,7 +112,7 @@ class InterventionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Recherche par le status demande
+     * Recherche par le status demande.
      */
     public function findByStatutString(string $statut): array
     {

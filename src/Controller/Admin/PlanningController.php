@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Admin;
 
 use App\Repository\InterventionRepository;
@@ -16,7 +18,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class PlanningController extends AbstractController
 {
     /**
-     * Page planning FullCalendar
+     * Page planning FullCalendar.
      */
     #[Route('/', name: 'app_admin_planning', methods: ['GET'])]
     public function index(UtilisateurRepository $utilisateurRepo): Response
@@ -28,13 +30,13 @@ final class PlanningController extends AbstractController
 
     /**
      * API : créneaux occupés (pour FullCalendar)
-     * ?technicien_id=X pour filtrer par technicien
+     * ?technicien_id=X pour filtrer par technicien.
      */
     #[Route('/api/creneaux', name: 'app_admin_planning_creneaux', methods: ['GET'])]
     public function creneaux(
         Request $request,
         InterventionRepository $interventionRepo,
-        UtilisateurRepository $utilisateurRepo
+        UtilisateurRepository $utilisateurRepo,
     ): JsonResponse {
         $technicienId = $request->query->get('technicien_id');
 
@@ -54,20 +56,20 @@ final class PlanningController extends AbstractController
             }
 
             $events[] = [
-                'id'    => $intervention->getId(),
+                'id' => $intervention->getId(),
                 'title' => sprintf(
                     '%s — %s',
                     $intervention->getClient()->getNomComplet(),
                     $intervention->getAdresse()->getVille()
                 ),
                 'start' => $intervention->getDatePlanifiee()->format('Y-m-d\TH:i:s'),
-                'end'   => $intervention->getDateFinPlanifiee()->format('Y-m-d\TH:i:s'), // ← utilise la méthode de l'entité
+                'end' => $intervention->getDateFinPlanifiee()->format('Y-m-d\TH:i:s'), // ← utilise la méthode de l'entité
                 'color' => $this->getCouleurTechnicien($intervention->getTechnicien()?->getId()),
                 'extendedProps' => [
                     'technicien' => $intervention->getTechnicien()?->getNomComplet(),
-                    'adresse'    => (string) $intervention->getAdresse(),
-                    'statut'     => $intervention->getStatut()->label(),
-                    'duree'      => $intervention->getDureeEstimee() ?? 120,
+                    'adresse' => (string) $intervention->getAdresse(),
+                    'statut' => $intervention->getStatut()->label(),
+                    'duree' => $intervention->getDureeEstimee() ?? 120,
                 ],
             ];
         }
@@ -76,7 +78,7 @@ final class PlanningController extends AbstractController
     }
 
     /**
-     * Couleur par technicien (pour différencier sur le calendrier)
+     * Couleur par technicien (pour différencier sur le calendrier).
      */
     private function getCouleurTechnicien(?int $id): string
     {
