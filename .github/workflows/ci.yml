@@ -47,7 +47,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: pdo, pdo_mysql, zip, intl
-          coverage: none
+          coverage: pcov
 
       # Le kernel Symfony a besoin d'un .env pour démarrer : recréé à la volée à partir des secrets CI
       # (jamais commité), avec des valeurs neutres pour mailer/messenger en environnement de test
@@ -78,6 +78,10 @@ jobs:
       # Vérifie que chaque fichier PHP est syntaxiquement valide avant d'aller plus loin
       - name: Verification de la syntaxe PHP
         run: find src tests -name "*.php" -exec php -l {} \;
+      
+      # Verifie que le code respecte les conventions PSR-12 et Symfony
+      - name: Verification du style de code
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
 
       # Vérifie que les templates Twig et les fichiers de config YAML sont valides
       - name: Verification de la syntaxe des fichiers Twig et YAML
@@ -117,7 +121,7 @@ jobs:
           CI_DB_PASSWORD: ${{ secrets.CI_MYSQL_PASSWORD }}
         run: |
           export DATABASE_URL="mysql://runflow:${CI_DB_PASSWORD}@127.0.0.1:3306/runflow?serverVersion=8.0"
-          php bin/phpunit --testdox
+          php bin/phpunit --testdox --coverage-text
 
   # Job 2 : déploiement en préproduction, uniquement après succès des tests et uniquement sur un push vers prepod
   deploy:
