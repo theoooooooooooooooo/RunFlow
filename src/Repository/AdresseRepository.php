@@ -18,7 +18,12 @@ class AdresseRepository extends ServiceEntityRepository
     }
 
     /**
-     * Adresses déjà utilisées par ce client dans ses interventions précédentes
+     * Adresses déjà associées à ce client via ses interventions précédentes, pour lui permettre de
+     * réutiliser une adresse existante plutôt que d'en ressaisir une nouvelle (voir
+     * {@see \App\Controller\InterventionController::new()}).
+     *
+     * Le distinct() est nécessaire car la jointure sur les interventions renverrait sinon la même
+     * adresse plusieurs fois si le client a plusieurs interventions à cette adresse.
      */
     public function findByClient(Utilisateur $client): array
     {

@@ -19,7 +19,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class InterventionController extends AbstractController
 {
     /**
-     * Vérifie que l'intervention appartient bien au technicien connecté
+     * Vérifie que l'intervention appartient bien au technicien connecté.
+     *
+     * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException si l'intervention
+     *         n'est pas assignée au technicien connecté ; aucune donnée n'est modifiée.
      */
     private function verifierProprietaire(Intervention $intervention): void
     {
@@ -32,7 +35,15 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Démarrer l'intervention (PLANIFIEE → EN_COURS)
+     * Démarre une intervention (PLANIFIEE → EN_COURS).
+     *
+     * N'agit que si l'intervention est au statut PLANIFIEE ; sinon la demande est ignorée
+     * (message d'erreur affiché, aucune donnée modifiée).
+     *
+     * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException si l'intervention
+     *         n'est pas assignée au technicien connecté.
+     *
+     * Effet de bord : flush l'EntityManager si le changement de statut est appliqué.
      */
     #[Route('/{id}/demarrer', name: 'app_technicien_intervention_demarrer', methods: ['POST'])]
     public function demarrer(
@@ -54,7 +65,16 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Ajouter ou modifier le commentaire + valider l'intervention (EN_COURS → TERMINEE)
+     * Ajoute ou modifie le commentaire de fin d'intervention et la marque comme terminée
+     * (EN_COURS → TERMINEE).
+     *
+     * N'agit que si l'intervention est au statut EN_COURS ; sinon la demande est ignorée
+     * (message d'erreur affiché, aucune donnée modifiée).
+     *
+     * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException si l'intervention
+     *         n'est pas assignée au technicien connecté.
+     *
+     * Effet de bord : persist du commentaire et flush de l'EntityManager en cas de validation.
      */
     #[Route('/{id}/valider', name: 'app_technicien_intervention_valider', methods: ['GET', 'POST'])]
     public function valider(

@@ -69,7 +69,9 @@ class UtilisateurRepository extends ServiceEntityRepository implements PasswordU
     }
 
     /**
-     * Comptes anonymisés récemment (48h) — pour notification admin
+     * Comptes anonymisés dans la fenêtre de temps donnée (48h par défaut), pour signaler les
+     * anonymisations RGPD récentes sur le tableau de bord admin (voir
+     * {@see \App\Controller\ProfilController::supprimer()}).
      */
     public function findRecemmentAnonymises(int $heures = 48): array
     {

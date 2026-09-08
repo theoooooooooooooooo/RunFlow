@@ -86,8 +86,13 @@ final class ProfilController extends AbstractController
     }
 
     /**
-     * Supprimer son compte avec anonymisation (RGPD - droit à l'effacement)
-     * Réservé aux clients
+     * Anonymise le compte du client connecté (droit à l'effacement RGPD) : les données personnelles
+     * (nom, prénom, email, téléphone, mot de passe) sont remplacées par des valeurs génériques et
+     * le rôle passe à ROLE_ANONYMISE, sans supprimer l'entité en base (conservation de l'historique
+     * des interventions liées).
+     *
+     * Effets de bord : flush de l'EntityManager, puis invalidation du token de sécurité et de la
+     * session — l'utilisateur est déconnecté immédiatement après l'anonymisation.
      */
     #[Route('/supprimer', name: 'app_profil_supprimer', methods: ['POST'])]
     #[IsGranted('ROLE_CLIENT')]

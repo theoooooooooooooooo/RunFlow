@@ -77,6 +77,9 @@ class Materiel
         return $this;
     }
 
+    /**
+     * @return Collection<int, MaterielIntervention>
+     */
     public function getMaterielInterventions(): Collection
     {
         return $this->materielInterventions;

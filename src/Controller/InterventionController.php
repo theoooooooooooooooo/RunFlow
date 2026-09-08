@@ -50,7 +50,13 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Création d'une intervention (Client)
+     * Crée une demande d'intervention pour le client connecté.
+     *
+     * Si le client ne sélectionne pas une adresse existante, réutilise une adresse déjà enregistrée
+     * pour lui si elle correspond exactement (rue/ville/code postal, comparaison insensible à la
+     * casse) plutôt que d'en créer une nouvelle, afin d'éviter les doublons d'adresse en base.
+     *
+     * Effet de bord : persist (Adresse le cas échéant, puis Intervention) et flush de l'EntityManager.
      */
     #[Route('/new', name: 'app_intervention_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CLIENT')]
@@ -128,7 +134,11 @@ final class InterventionController extends AbstractController
     }
 
     /**
-     * Détail d'une intervention (Client + Technicien)
+     * Détail d'une intervention (Client + Technicien).
+     *
+     * @throws \Symfony\Component\Security\Core\Exception\AccessDeniedException si l'utilisateur
+     *         connecté n'est ni administrateur, ni le client propriétaire de la demande, ni le
+     *         technicien qui y est affecté ; aucune donnée n'est modifiée.
      */
     #[Route('/{id}', name: 'app_intervention_show', methods: ['GET'])]
     public function show(Intervention $intervention): Response

@@ -16,7 +16,10 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
-// Gère le formulaire de connexion : vérifie les identifiants et redirige selon le rôle une fois connecté
+/**
+ * Authenticator du formulaire de connexion : construit le passport à partir des identifiants soumis
+ * et détermine la redirection à effectuer une fois l'utilisateur authentifié.
+ */
 class UtilisateurAuthenticator extends AbstractLoginFormAuthenticator
 {
     use TargetPathTrait;
@@ -28,7 +31,11 @@ class UtilisateurAuthenticator extends AbstractLoginFormAuthenticator
     }
 
     /**
-     * Construit le "passport" à partir du formulaire soumis : email, mot de passe, token CSRF et remember-me
+     * Construit le passport (email, mot de passe, token CSRF, remember-me) à partir du formulaire soumis ;
+     * la vérification effective du mot de passe et du token CSRF est déléguée au système de sécurité
+     * Symfony après le retour de cette méthode.
+     *
+     * Effet de bord : enregistre l'email saisi en session (pour le pré-remplir en cas d'échec de connexion).
      */
     public function authenticate(Request $request): Passport
     {
@@ -47,7 +54,9 @@ class UtilisateurAuthenticator extends AbstractLoginFormAuthenticator
     }
 
     /**
-     * Après connexion réussie, redirige vers le tableau de bord correspondant au rôle de l'utilisateur
+     * Redirige l'utilisateur vers le tableau de bord de son rôle le plus privilégié : un utilisateur
+     * cumulant plusieurs rôles est envoyé sur le tableau de bord admin en priorité, puis technicien,
+     * et sinon sur le tableau de bord client par défaut.
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
